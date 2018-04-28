@@ -1,4 +1,4 @@
-nfmatch<-function(z,p,fine,X,caliper,dat,constant=NULL,exact=NULL,nearexact=T,rank=T,ncontrol=1,penalty=1000,max.cost=penalty/10,Xextra=NULL,weight=1,sub=F,subX=NULL){
+nfmatch<-function(z,p,fine,X,dat,caliper,constant=NULL,ncontrol=1,rank=T,exact=NULL,penalty=1000,max.cost=penalty/10,nearexact=NULL,nearexPenalty=max.cost,Xextra=NULL,weight=NULL,sub=F,subX=NULL){
 
   #Check input
   stopifnot(is.data.frame(dat))
@@ -21,6 +21,12 @@ nfmatch<-function(z,p,fine,X,caliper,dat,constant=NULL,exact=NULL,nearexact=T,ra
   stopifnot(ncontr>=(ncontrol*ntreat))
   if (is.data.frame(X)) X<-as.matrix(X)
   if (is.vector(X)) X<-matrix(X,length(X),1)
+  if (is.data.frame(nearexact)) nearexact<-as.matrix(nearexact)
+  if (is.factor(nearexact)){
+    levels(nearexact)=1:nlevels(nearexact)
+    nearexact=as.numeric(nearexact)
+  }
+  if (is.vector(nearexact)) nearexact<-matrix(nearexact,length(nearexact),1)
   if (is.data.frame(Xextra)) Xextra<-as.matrix(Xextra)
   if (is.vector(Xextra)) Xextra<-matrix(Xextra,length(Xextra),1)
   stopifnot(length(z)==(dim(X)[1]))
@@ -42,31 +48,14 @@ nfmatch<-function(z,p,fine,X,caliper,dat,constant=NULL,exact=NULL,nearexact=T,ra
       levels(exact)=1:nlevels(exact)
       exact<-as.integer(exact)
     }
-    if (is.vector(exact)) exact=as.matrix(exact,ncol=1)
-    EE=findexact(z,exact,ncontrol)
-    Ex=EE$NewExact
-    missingm=NULL
-    if (is.null(Ex)){
-      print("Exact matching for any subset of exact variables is infeasible for every caliper.")
-      missingm=EE$miss
-    }else if (dim(EE$miss)[2]>0){
-      print("An exact match for all exact variables is infeasible for every caliper.")
-      print("We will select as many important variables as we can.")
-      missingm=EE$miss
-    }
-  }else{
-    Ex=NULL
   }
 
   #sort input
-  if (is.null(Ex)){
+  if (is.null(exact)){
     o<-order(1-p)
   }else{
-    o<-order(Ex,1-p)
-    Ex<-Ex[o]
-    if (!is.null(missingm)){
-      missingm=missingm[o,]
-    }
+    o<-order(exact,1-p)
+    exact<-exact[o]
   }
 
   or <- rank(1-p,ties.method = 'min')
@@ -76,18 +65,19 @@ nfmatch<-function(z,p,fine,X,caliper,dat,constant=NULL,exact=NULL,nearexact=T,ra
   fine<-fine[o]
   X<-X[o,]
   dat<-dat[o,]
+  if (!is.null(nearexact)) nearexact=nearexact[o,]
   if (!is.null(Xextra)) Xextra=Xextra[o,]
   if (!is.null(subX)) subX=subX[o]
 
   #do match
   timeind=proc.time()
   if (rank){
-    dist<-smahal(z,or,X,caliper,constant,Ex,nearexact,Xextra, weight)
+    dist<-smahal(z,or,X,caliper,constant,exact,nearexact,Xextra,weight)
   }else{
-    dist<-smahal(z,p,X,caliper,constant,Ex,nearexact,Xextra, weight)
+    dist<-smahal(z,p,X,caliper,constant,exact,nearexact,Xextra,weight)
   }
   timeind=proc.time()-timeind
-  m<-nearfine(z,fine,dist,dat,X,ncontrol,penalty,max.cost,sub,subX)
+  m<-nearfine(z,fine,dist,dat,X,ncontrol,penalty,max.cost,nearexPenalty,sub,subX)
   if(m[[1]]==0) {
     if (!is.null(exact)) warning("The match you requested is infeasible.  Reconsider caliper, ncontrol and exact.")
     else warning("The match you requested is infeasible, perhaps because the caliper is too small.")

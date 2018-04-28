@@ -6,7 +6,11 @@ findexact<-function(z,E,ncontrol=1){
   if (is.vector(E)) E=as.matrix(E,ncol=1)
   k<-dim(E)[2]
   r<-rep(F,k)
+  names<-colnames(E)
+  if (is.null(names)) names=rep('',k)
   for (i in 1:k){
+    if (names[i]=='') colnames(E)[i]=paste('ExactVariable',i,sep='')
+    colnames(E)[i]=gsub(" ","_",colnames(E)[i])
     r[i]=T
     Esub=E[,r]
     dsub=as.data.frame(cbind(Esub,z))

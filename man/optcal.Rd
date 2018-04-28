@@ -7,7 +7,7 @@ optcal(z, p, exact=NULL, ncontrol=1, tol=NULL, rank=T)
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control.}
 \item{p}{ A vector with the same length as z.  The best caliper for p is found. Often p is the propensity score.}
-\item{exact}{ If exact is NULL, then there is no exact matching, and the caliper refers to p alone.  Otherwise, exact is a vector or matrix of important covariates that need to be exactly matched. We will select as many important covariates as we can and construct a new vector Ex of the same length as z for exact matching, such that two individuals, i and j, can be matched only if they have the same value of Ex, Ex[i]=Ex[j].  In this case, the caliper is best among calipers that permit exact matching for exact.  Typically, Ex has a moderate number of possible values, far fewer than length(z).}
+\item{exact}{ If exact is NULL, then there is no exact matching, and the caliper refers to p alone.  Otherwise, exact is a vector of the same length as z for exact matching, such that two individuals, i and j, can be matched only if they have the same value of exact, exact[i]=exact[j].  In this case, the caliper is best among calipers that permit exact matching for exact.  Typically, exact has a moderate number of possible values, far fewer than length(z).}
 \item{ncontrol}{ A positive integer giving the number of controls to be matched to each treated subject.  If ncontrol is too large, the match will be infeasible.}
 \item{tol}{ The tolerance.  The optimal caliper is determined with an error of at most tol.  tol=0.01 might be used for the propensity score, as it takes values between 0 and 1, whereas tol=1/2 for p=age would mean that the caliper for age errs by at most half a year.}
 \item{rank}{ An indicator of whether we want a caliper on rank of p or p.}
@@ -31,6 +31,9 @@ attach(nh0506)
 
 #optimal caliper using the propensity score alone
 optcal(z,propens,tol=0.1,rank=FALSE)
+
+#optimal caliper using the rank of propensity score
+#and match each treated subject with two controls
 \donttest{
 optcal(z,propens,ncontrol=2,rank=TRUE)
 }

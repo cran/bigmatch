@@ -28,8 +28,8 @@ glover(left,right,mm=TRUE)
 }
 \description{
 Uses Glover's (1967) algorithm to find a perfect matching in a convex bipartite graph.
-The implementation uses a priority queue, not used by Glover, as in Figure 1 of
-Katriel (2008).
+The implementation uses a priority queue, not used by Glover, as in Figure 1 of Katriel (2008).
+Of limited interest to most users; function glover() would typically be called by other functions.
 }
 
 \details{

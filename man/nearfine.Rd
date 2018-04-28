@@ -2,12 +2,11 @@
 \alias{nearfine}
 \title{Minimum-distance near-fine matching.}
 \usage{
-nearfine(z, fine, dist, dat, X, ncontrol = 1, penalty=1000,
-max.cost=penalty/10, sub=F, subX)
+nearfine(z, fine, dist, dat, X, ncontrol = 1, penalty=1000, max.cost=penalty/10,
+nearexPenalty=max.cost, sub=F, subX)
 }
 \arguments{
-\item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for
-a control. Must have treated subjects (z=1) before controls (z=0).}
+\item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control. Must have treated subjects (z=1) before controls (z=0).}
 \item{fine}{ A vector of with length(z)=length(fine) giving the nominal levels
 that are to be nearly-finely balanced.}
 \item{dist}{ A distance list with the starting node (treated subjec), ending
@@ -22,6 +21,9 @@ matched to each treated subject.}
 \item{penalty}{ A numeric penalty imposed for each violation of fine balance.}
 \item{max.cost}{ The maximum cost for the each pair of treated and control
 while rounding the cost. 2 times it is the cost for nearexact matching}
+\item{nearexPenalty}{ The penalty for a mismatch on nearexact. If it is a number, then use the same
+penalty for all nearexact variables. Otherwise, it should be a vector of length the same as number
+of nearexact variables, indicating the penalty for mismatch on each nearexact variable.}
 \item{sub}{ An indicator of whether optimal subset matching is required.}
 \item{subX}{ If a subset matching is required, the variable that the subset matching is based on, i.e. only minimum of number of treated and controls will be matched.}
 }
@@ -32,13 +34,14 @@ is infeasible.}
 \item{timeinrelax}{Time in RELAX IV spent computing the minimum cost flow.}
 \item{timeinnet}{Time in constructing the network.}
 \item{timeinmatch}{Time in constructing the matched dataset.}
-\item{d}{The matched sample.  Selected rows of dat.}
+\item{d}{The matched sample.  Selected rows of dat. The first column indicates which matched set
+the subject belongs to.}
 \item{number}{ Number of edges between the treated subjects and controls in
 the reduced network.}
 }
 
 \description{
-The program finds an optimal near-fine match.
+The program finds an optimal near-fine match given a distance structure with from node (treated), to node (control), and distance between each pair.
 }
 
 
@@ -57,19 +60,20 @@ and Rosenbaum (2010).
 
 For near-fine balannce balance, see Yang et al. (2012).
 
-You MUST install and load the rcbalance package to use nearfinelate.
+You MUST install and load the optmatch package to use nearfine.
 }
 \examples{
 \dontrun{
 # To run this example, you must load the optmatch package.
+
 data(nh0506)
 attach(nh0506)
 X<-cbind(female,age,black,hispanic,education,povertyr)
-dist<-smahal(z,propens,X,0.3)
+dist<-smahal(z,propens,X,0.2)
 fine<-education
-detach(nh0506)
-
 m<-nearfine(nh0506$z,fine,dist,nh0506,X)
+head(m$d)
+detach(nh0506)
 }
 }
 \references{

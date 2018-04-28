@@ -1,4 +1,4 @@
-nearfine<-function(z,fine,dist,dat,X,ncontrol=1,penalty=1000,max.cost=penalty/10,sub=F,subX=NULL){
+nearfine<-function(z,fine,dist,dat,X,ncontrol=1,penalty=1000,max.cost=penalty/10,nearexPenalty=max.cost,sub=F,subX=NULL){
   stopifnot(is.data.frame(dat))
   stopifnot(is.vector(z))
   stopifnot(is.vector(fine))
@@ -16,12 +16,13 @@ nearfine<-function(z,fine,dist,dat,X,ncontrol=1,penalty=1000,max.cost=penalty/10
   nobs<-length(z)
   ntreat<-sum(z)
   timeinnet=proc.time()
-  net<-netfine(z,fine,dist,ncontrol,penalty,max.cost,sub,subX)
+  net<-netfine(z,fine,dist,ncontrol,penalty,max.cost,nearexPenalty,sub,subX)
   timeinnet=proc.time()-timeinnet
   timeinrelax<-proc.time()
   #output = eval(parse(text='rcbalance::callrelax(net)'))
   output<-rcbalance::callrelax(net)
   timeinrelax<-proc.time()-timeinrelax
+
   timeinmatch=proc.time()
   if (output$feasible!=1){
     warning("Match is infeasible.  Change dist or ncontrol to obtain a feasible match.")
@@ -45,6 +46,8 @@ nearfine<-function(z,fine,dist,dat,X,ncontrol=1,penalty=1000,max.cost=penalty/10
     matchid=matrix(c(id1[as.numeric(row.names(matches))], id0[as.vector((matches-sum(z)))]),ncol=ncontrol+1)
     matchid=as.vector(t(matchid))
     dat1=dat[matchid,]
+    mset=rep(1:ntreat,each=ncontrol+1)
+    dat1=cbind(mset,dat1)
     timeinmatch=proc.time()-timeinmatch
     list(feasible=output$feasible,timeinrelax=timeinrelax,timeinnet=timeinnet,timeinmatch=timeinmatch,d=dat1,number=net$tcarcs)
   }

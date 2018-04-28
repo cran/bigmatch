@@ -1,4 +1,4 @@
-netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,sub=F,subX=NULL){
+netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearexPenalty=max.cost,sub=F,subX=NULL){
 
   #check input
   stopifnot(is.vector(z))
@@ -12,9 +12,11 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,sub=F,
   stopifnot(ncontr>=(ncontrol*ntreat))
   stopifnot(nobs==length(fine))
   stopifnot(length(unique(fine))>=2)
+  if (is.vector(dist$nearex)) near<-as.matrix(dist$nearex,ncol=1)
+  else near<-dist$nearex
+  if ((!is.null(near))&(is.numeric(nearexPenalty))) nearexPenalty=rep(nearexPenalty,dim(near)[2])
 
   #create basic treated-vs-control bipartite graph
-  nums<-1:nobs
   fine1=fine[z==1]
   fine0=fine[z==0]
   if (!is.null(subX)){
@@ -30,7 +32,17 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,sub=F,
   b<-c(b,rep(0,ncontr)) #flow conservation at control nodes
   #Make costs integer
   cost<-round(max.cost*(cost-min(cost))/(max(cost)-min(cost)))
-  if (!is.null(dist$nearex)) cost[which(dist$nearex)]=2*max.cost
+  if (!is.null(dist$nearex)){
+    nears<-apply(near,1,function(x) sum(nearexPenalty[x]))
+    cost<-cost+nears
+  }
+
+  #create a duplicate for each control to make sure each control is only used once
+  startn=c(startn,(ntreat+1):nobs)
+  endn=c(endn,(nobs+1):(nobs+ncontr))
+  cost=c(cost,rep(0,ncontr))
+  ucap=c(ucap,rep(1,ncontr))
+  b<-c(b,rep(0,ncontr))
 
   #Add structure to the bipartite graph for near fine balance
 
@@ -77,7 +89,7 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,sub=F,
       who0<-fine0==finelevels[k]
       b<-c(b,0)
       if (sum(who0)>0){
-        startn<-c(startn,rep(ntreat,sum(who0))+which(who0))
+        startn<-c(startn,rep(nobs,sum(who0))+which(who0))
         endn<-c(endn,rep(sinkk,sum(who0)))
         ucap<-c(ucap,rep(1,sum(who0)))
         cost<-c(cost,rep(0,sum(who0)))
@@ -88,7 +100,7 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,sub=F,
   #Add a node to take the extras
   sinkex<-length(b)+1
   b<-c(b,0)
-  startn<-c(startn,(ntreat+1):nobs)
+  startn<-c(startn,(nobs+1):(nobs+ncontr))
   endn<-c(endn,rep(sinkex,ncontr))
   ucap<-c(ucap,rep(1,ncontr))
   cost<-c(cost,rep(0,ncontr))

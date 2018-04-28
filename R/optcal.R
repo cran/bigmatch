@@ -13,33 +13,19 @@ optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=T){
   }
 
   if (!is.null(exact)){
-    if (is.factor(exact)){
-      levels(exact)=1:nlevels(exact)
-      exact<-as.integer(exact)
+    tb<-table(z,exact)
+    if (!all(tb[2,]<=tb[1,])){
+      stop("An exact match for exact is infeasible for every caliper.")
     }
-    if (is.vector(exact)) exact=as.matrix(exact,ncol=1)
-    EE=findexact(z,exact,ncontrol)
-    Ex=EE$NewExact
-    missingm=NULL
-    if (is.null(Ex)){
-      print("Exact matching for any subset of exact variables is infeasible for every caliper.")
-      missingm=EE$miss
-    }else if (dim(EE$miss)[2]>0){
-      print("An exact match for all exact variables is infeasible for every caliper.")
-      print("We will select as many important variables as we can.")
-      missingm=EE$miss
-    }
-  }else{
-    Ex=NULL
   }
 
   or<-rank(1-p,ties.method = 'min')
   #sort input
-  if (is.null(Ex)){
+  if (is.null(exact)){
     o<-order(1-p)
   }else{
-    o<-order(Ex,1-p)
-    Ex<-Ex[o]
+    o<-order(exact,1-p)
+    exact<-exact[o]
   }
   z<-z[o]
   p<-p[o]
@@ -53,9 +39,9 @@ optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=T){
     use1<-rep(p[z==1],each=ncontrol)
     use0<-p[z==0]
   }
-  if (!is.null(Ex)){
-    ex1<-rep(Ex[z==1],each=ncontrol)
-    ex0<-Ex[z==0]
+  if (!is.null(exact)){
+    ex1<-rep(exact[z==1],each=ncontrol)
+    ex0<-exact[z==0]
   }
   nt<-sum(z)*ncontrol
   nc<-sum(1-z)

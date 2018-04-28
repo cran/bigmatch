@@ -8,7 +8,7 @@ optconstant(z, p, caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T)
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control. }
 \item{p}{ A vector with the same length as z.  The best constant for p is found. Often p is the propensity score.}
 \item{caliper}{ If two individuals differ on p by more than caliper, there is no edge between this pair.  If caliper is too small, the match may be infeasible.}
-\item{exact}{ If exact is NULL, then there is no exact matching, and the constant refers to p alone.  Otherwise, exact is a vector or matrix of important covariates that need to be exactly matched. We will select as many important covariates as we can and construct a new vector Ex of the same length as z for exact matching, such that two individuals, i and j, can be matched only if they have the same value of Ex, Ex[i]=Ex[j].  In this case, the constant is best among calipers that permit exact matching for exact.  Typically, Ex has a moderate number of possible values, far fewer than length(z).}
+\item{exact}{ If exact is NULL, then there is no exact matching, and the constant refers to p alone.  Otherwise, exact is a vector of the same length as z for exact matching, such that two individuals, i and j, can be matched only if they have the same value of exact, exact[i]=exact[j].  In this case, the constant is best among calipers that permit exact matching for exact.  Typically, exact has a moderate number of possible values, far fewer than length(z).}
 \item{ncontrol}{ A positive integer giving the number of controls to be matched to each treated subject.  If ncontrol is too large, the match will be infeasible.}
 \item{tol}{ The tolerance.  The optimal constant is determined with an error of at most tol.}
 \item{rank}{ An indicator of whether we want a constant on rank of p or p.}
@@ -19,7 +19,7 @@ optconstant(z, p, caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T)
 \item{interval.length}{The length of interval.  By definition, length.interval<=tol.}
 }
 \description{
-Finds the smallest constant on variable p or rank of p such that a treated-control matching with that constant exists.  If exact is not NULL, then finds the smallest constant on p or rank of p such that a treated-control matching with that constant exists while also matching exact for the variable exact.
+Finds the smallest constant k on variable p or rank of p such that a treated-control matching with that constant exists. If exact is not NULL, then finds the smallest constant on p or rank of p such that a treated-control matching with that constant exists while also matching exact for the variable exact. If caliper is NULL, we only consider match treated i to k controls with smallest difference of p or rank of p. If caliper is not NULL and there are more than k controls within that caliper for treated i, then we only consider match it to k controls with smallest difference of p or rank of p.
 
 }
 \details{

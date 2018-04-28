@@ -2,8 +2,8 @@
 \alias{netfine}
 \title{Optimal near-fine match from a distance matrix.}
 \usage{
-netfine(z, fine, dist, ncontrol = 1, penalty = 1000, max.cost=penalty/10,
-sub=F, subX=NULL)
+netfine(z, fine, dist, ncontrol=1, penalty=1000, max.cost=penalty/10,
+nearexPenalty=max.cost, sub=F, subX=NULL)
 }
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for
@@ -16,7 +16,10 @@ node (control), the distance between them and whether nearexact is needed for ea
 matched to each treated subject.}
 \item{penalty}{ A numeric penalty imposed for each violation of fine balance.}
 \item{max.cost}{ The maximum cost for the each pair of treated and control
-while rounding the cost. 2 times it is the cost for nearexact matching}
+while rounding the cost. }
+\item{nearexPenalty}{ The penalty for a mismatch on nearexact. If it is a number, then use the same
+penalty for all nearexact variables. Otherwise, it should be a vector of length the same as number
+of nearexact variables, indicating the penalty for mismatch on each nearexact variable.}
 \item{sub}{ An indicator of whether optimal subset matching is required.}
 \item{subX}{ If a subset matching is required, the variable that the subset matching is based on, i.e. only minimum of number of treated and controls will be matched.}
 }
@@ -24,7 +27,7 @@ while rounding the cost. 2 times it is the cost for nearexact matching}
 \description{
 The function creates the network for optimal near-fine matching to be passed
 via callrelax to the Fortran code for Bertsekas and Tseng's (1988) Relax IV.
-netfine() would typically be called by some other function.
+Of limited interest to most users; function netfine() would typically be called by some other functions.
 }
 \details{
 
