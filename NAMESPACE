@@ -1,6 +1,6 @@
 exportPattern("^[[:alpha:]]+")
 importFrom("rcbalance","callrelax")
-importFrom("stats", "cov", "var")
+importFrom("stats", "cov", "var", "sd")
 importFrom("liqueueR", "PriorityQueue")
 importFrom("plyr", "count","daply")
 importFrom("mvnfast", "maha")

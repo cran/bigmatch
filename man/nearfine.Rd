@@ -2,8 +2,8 @@
 \alias{nearfine}
 \title{Minimum-distance near-fine matching.}
 \usage{
-nearfine(z, fine, dist, dat, X, ncontrol = 1, penalty=1000, max.cost=penalty/10,
-nearexPenalty=max.cost, sub=F, subX)
+nearfine(z, fine, dist, dat, X, ncontrol=1, penalty=1000, max.cost=penalty/10,
+nearexPenalty=max.cost, sub=F, subX=NULL)
 }
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control. Must have treated subjects (z=1) before controls (z=0).}
@@ -46,7 +46,6 @@ The program finds an optimal near-fine match given a distance structure with fro
 
 
 \details{
-
 The match minimizes the total distance between treated subjects and their
 matched controls subject to a near-fine balance constraint imposed as a
 penalty on imbalances.
@@ -65,7 +64,6 @@ You MUST install and load the optmatch package to use nearfine.
 \examples{
 \dontrun{
 # To run this example, you must load the optmatch package.
-
 data(nh0506)
 attach(nh0506)
 X<-cbind(female,age,black,hispanic,education,povertyr)
@@ -77,7 +75,6 @@ detach(nh0506)
 }
 }
 \references{
-
 Bertsekas, D. P. and Tseng, P. (1988) The relax codes for linear minimum cost
 network flow problems. Annals of Operations Research, 13, 125-190.  Fortran
 and C code: http://www.mit.edu/~dimitrib/home.html.  Available in R via the
@@ -91,5 +88,4 @@ Rosenbaum, P. R. (2010) Design of Observational Studies.  New York: Springer.
 Yang, D., Small, D. S., Silber, J. H., and Rosenbaum, P. R. (2012) Optimal
 matching with minimal deviation from fine balance in a study of obesity and
 surgical outcomes.  Biometrics, 68, 628-636.
-
 }

@@ -2,8 +2,8 @@
 \alias{smahal}
 \title{Creates a robust Mahalanobis distance for matching.}
 \usage{
-smahal(z, p, X, caliper, constant=NULL, exact=NULL, nearexact=NULL, Xextra=NULL,
-weight=NULL)
+smahal(z, p, X, caliper, constant=NULL, exact=NULL, nearexact=NULL,
+Xextra=NULL, weight=NULL)
 }
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control. }
@@ -53,7 +53,7 @@ X<-cbind(female,age,black,hispanic,education,povertyr)
 dist<-smahal(z,propens,X,0.2)
 dist$d[1:10]
 
-dist2<-smahal(z,propens,X,0.2,exact=female,Xextra=hispanic,nearexact=education)
+dist2<-smahal(z,propens,X,0.2,exact=female,Xextra=hispanic,nearexact=bmi)
 dist2$nearex[1:10]
 
 detach(nh0506)

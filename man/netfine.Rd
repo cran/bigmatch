@@ -21,7 +21,7 @@ while rounding the cost. }
 penalty for all nearexact variables. Otherwise, it should be a vector of length the same as number
 of nearexact variables, indicating the penalty for mismatch on each nearexact variable.}
 \item{sub}{ An indicator of whether optimal subset matching is required.}
-\item{subX}{ If a subset matching is required, the variable that the subset matching is based on, i.e. only minimum of number of treated and controls will be matched.}
+\item{subX}{ If a subset matching is required, the variable that the subset matching is based on, i.e. Only minimum of number of treated and controls will be matched.}
 }
 \value{ A network for optimal near-fine matching.}
 \description{
@@ -30,7 +30,6 @@ via callrelax to the Fortran code for Bertsekas and Tseng's (1988) Relax IV.
 Of limited interest to most users; function netfine() would typically be called by some other functions.
 }
 \details{
-
 The network contains a bipartite graph for treated and control subjects plus
 additional nodes for fine balance categories, plus additional nodes accept
 needed deviations from fine balance yielding near-fine balance.
@@ -39,7 +38,6 @@ For discussion of fine-balance, see Rosenbaum (1989, Section 3) and Rosenbaum (2
 For near-fine balance balance, see Yang et al. (2012).
 }
 \references{
-
 Bertsekas, D. P. and Tseng, P. (1988) The relax codes for linear minimum cost
 network flow problems. Annals of Operations Research, 13, 125-190.  Fortran
 and C code: http://www.mit.edu/~dimitrib/home.html.  Available in R via the
@@ -53,5 +51,4 @@ Rosenbaum, P. R. (2010) Design of Observational Studies.  New York: Springer.
 Yang, D., Small, D. S., Silber, J. H., and Rosenbaum, P. R. (2012) Optimal
 matching with minimal deviation from fine balance in a study of obesity and
 surgical outcomes.  Biometrics, 68, 628-636.
-
 }

@@ -1,31 +1,39 @@
 glover<-function(left,right,mm=F){
-  #This is Glover's algorithm as given by Katriel (2008) Matchings in node-weighted convex bipartitie graphs.
-  #INFORMS Journal on Computing 20(2):205-211, Figure 1
 
   nx<-length(left)
   ny<-max(right)
-  stopifnot(length(left)==length(right))
+  stopifnot(length(left)==nx)
+  stopifnot(length(right)==nx)
   stopifnot(all(left<=right))
+
+  oright<-order(right)
+  lefto<-left[oright]
+  righto<-right[oright]
+  oleft<-order(lefto)
 
   mx<-rep(NA,nx)
   my<-rep(NA,nx)
-  qu <- liqueueR::PriorityQueue$new()
+  qu<-liqueueR::PriorityQueue$new()
+  nb<-1
+  ne<-1
   for (i in 1:ny) {
-    w<-which(left==i)
-    if (any(w)) {
-      for (j in w) qu$push(j,priority=ny-right[j])
+    while ((nb<=nx) & (lefto[oleft[nb]]==i)){
+      qu$push(oleft[nb],priority=-oleft[nb])
+      nb<-nb+1
     }
     if (qu$size()>0){
       xj<-qu$pop()
-      if (right[xj]>=i){
-        mx[xj]<-xj
-        my[xj]<-i
-      }else if(!mm){
-        return(NULL)
-      }
+      mx[xj]<-oright[xj]
+      my[xj]<-i
+
+    }
+    while ((ne<=nx)&(righto[ne]==i)){
+      if ((qu$size()>0) & (ne>xj)) qu$pop()
+      ne<-ne+1
     }
   }
-  if (mm) return(data.frame(mx,my))
-  else if (qu$size()==0) return(data.frame(mx,my))
+  if (sum(is.na(mx))==0){
+    return(data.frame(mx,my))
+  }else if (mm) return(data.frame(mx,my))
   else return(NULL)
 }

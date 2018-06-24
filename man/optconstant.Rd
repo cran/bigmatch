@@ -2,7 +2,7 @@
 \alias{optconstant}
 \title{Finds the optimal constant.}
 \usage{
-optconstant(z, p, caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T)
+optconstant(z, p, caliper=NULL, exact=NULL, ncontrol=1, tol=1, rank=T)
 }
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control. }
@@ -46,13 +46,7 @@ detach(nh0506)
 }
 }
 \references{
+Glover, F. (1967). Maximum Matching In Convex Bipartite Graphs.  Naval Research Logistics Quarterly, 14, pp 313-316.
 
-Glover, F. (1967). Maximum matching in convex bipartite graphs.  Naval Research Logistics Quarterly,
-14, 313-316.
-
-Katriel, I. (2008). Matchings in node-weighted convex bipartite graphs.  INFORMS Journal on
-Computing, 20, 2, 205-211.
-
-Rosenbaum, P. R. (2010) Design of Observational Studies.  New York: Springer.
-
+Lipski, W., Jr, and Preparata, F. P. (1981). Efficient Algorithms For Finding Maximum Matchings In Convex Bipartite Graphs And Related Problems.  Journal Acta Informatica, 15, 4, pp 329-346.
 }

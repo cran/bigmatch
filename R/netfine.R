@@ -11,17 +11,16 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearex
   ncontr<-sum(1-z)
   stopifnot(ncontr>=(ncontrol*ntreat))
   stopifnot(nobs==length(fine))
-  stopifnot(length(unique(fine))>=2)
   if (is.vector(dist$nearex)) near<-as.matrix(dist$nearex,ncol=1)
   else near<-dist$nearex
-  if ((!is.null(near))&(is.numeric(nearexPenalty))) nearexPenalty=rep(nearexPenalty,dim(near)[2])
+  if ((!is.null(near))&(is.numeric(nearexPenalty))) nearexPenalty<-rep(nearexPenalty,dim(near)[2])
 
   #create basic treated-vs-control bipartite graph
-  fine1=fine[z==1]
-  fine0=fine[z==0]
+  fine1<-fine[z==1]
+  fine0<-fine[z==0]
   if (!is.null(subX)){
-    subX1=subX[z==1]
-    subX0=subX[z==0]
+    subX1<-subX[z==1]
+    subX0<-subX[z==0]
   }
   startn<-dist$start
   endn<-dist$end
@@ -38,10 +37,10 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearex
   }
 
   #create a duplicate for each control to make sure each control is only used once
-  startn=c(startn,(ntreat+1):nobs)
-  endn=c(endn,(nobs+1):(nobs+ncontr))
-  cost=c(cost,rep(0,ncontr))
-  ucap=c(ucap,rep(1,ncontr))
+  startn<-c(startn,(ntreat+1):nobs)
+  endn<-c(endn,(nobs+1):(nobs+ncontr))
+  cost<-c(cost,rep(0,ncontr))
+  ucap<-c(ucap,rep(1,ncontr))
   b<-c(b,rep(0,ncontr))
 
   #Add structure to the bipartite graph for near fine balance

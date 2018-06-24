@@ -2,7 +2,7 @@
 \alias{glover}
 \title{Perfect matching and maximum matching in a convex bipartite graph.}
 \usage{
-glover(left, right,mm=F)
+glover(left, right, mm=F)
 }
 \arguments{
 \item{left}{ Treated person i may be matched to controls j with left[i] <= j <= right[i]. There are length(left) treated individuals and length(left)=length(right). Must have left[i]<=right[i] for every i.  Define maxc = max(right).  Then there are maxc potential control, labeled 1, 2,..., maxc.  The values in left and right are these labels for controls.}
@@ -27,26 +27,20 @@ glover(left,right)
 glover(left,right,mm=TRUE)
 }
 \description{
-Uses Glover's (1967) algorithm to find a perfect matching in a convex bipartite graph.
-The implementation uses a priority queue, not used by Glover, as in Figure 1 of Katriel (2008).
+Uses Glover's (1967) algorithm to find a perfect matching in a convex bipartite graph. The implementation uses a priority queue, not used by Glover, as in Lipski and Preparata (1981).
 Of limited interest to most users; function glover() would typically be called by other functions.
 }
 
 \details{
-
 The match produced by glover is rarely useful in observational studies, because it finds a match, not the closest match, not the minimum distance match.
 
-The glover algorithm may be used to find the smallest feasible caliper on a certain criterion.  Each caliper on the criterion creates a different convex bipartite graph.  Use glover to check whether a particular caliper is feasible.  Use binary search to find the smallest caliper that permits a match.  There are many variations on this theme.
+The glover algorithm may be used to find the smallest feasible caliper on a certain criterion.  Each caliper on the criterion creates a different convex bipartite graph. Use glover to check whether a particular caliper is feasible. Use bisection search to find the smallest caliper that permits a match. There are many variations on this theme.
 
 The glover algorithm is much faster than optimal matching.  Iterative use of glover's algorithm is often faster than a single minimum distance match.
 }
 
 \references{
+Glover, F. (1967). Maximum Matching In Convex Bipartite Graphs.  Naval Research Logistics Quarterly, 14, pp 313-316.
 
-Glover, F. (1967). Maximum matching in convex bipartite graphs.  Naval Research Logistics Quarterly, 14, 313-316.
-
-Katriel, I. (2008). Matchings in node-weighted convex bipartite graphs.  INFORMS Journal on Computing, 20, 2, 205-211.
-
-
-
+Lipski, W., Jr, and Preparata, F. P. (1981). Efficient Algorithms For Finding Maximum Matchings In Convex Bipartite Graphs And Related Problems.  Journal Acta Informatica, 15, 4, pp 329-346.
 }

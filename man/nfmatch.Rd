@@ -49,7 +49,6 @@ The program finds an optimal near-fine match with a given caliper on p or rank o
 
 
 \details{
-
 The match minimizes the total distance between treated subjects and their matched controls
 subject to a near-fine balance constraint imposed as a penalty on imbalances.
 
@@ -99,18 +98,17 @@ detach(nh0506)
   m3<-nfmatch(z,propens,factor(hispanic):factor(education),X,nh0506,oc$caliper,oco$constant,
               exact=female,nearexact=cbind(pq,bq),rank=F)
   matcheddata3=m3$data
-  table(matcheddata3$z,matcheddata3$povertyr)
+  head(matcheddata3)
 
   #then assume povertyr is more important than bmi
   m4<-nfmatch(z,propens,factor(hispanic):factor(education),X,nh0506,oc$caliper,oco$constant,
               exact=female,nearexact=cbind(pq,bq),nearexPenalty=c(100,50),rank=F)
   matcheddata4=m4$data
-  table(matcheddata4$z,matcheddata4$povertyr)
+  head(matcheddata4)
   detach(nh0506)
 }
 }
 \references{
-
 Bertsekas, D. P. and Tseng, P. (1988) The relax codes for linear minimum cost network flow problems. Annals of Operations Research, 13, 125-190.  Fortran and C code: http://www.mit.edu/~dimitrib/home.html.  Available in R via the optmatch package.
 
 Rosenbaum, P.R. (1989) Optimal matching in observational studies. Journal of the American Statistical Association, 84, 1024-1032.
@@ -118,5 +116,4 @@ Rosenbaum, P.R. (1989) Optimal matching in observational studies. Journal of the
 Rosenbaum, P. R. (2010) Design of Observational Studies.  New York: Springer.
 
 Yang, D., Small, D. S., Silber, J. H., and Rosenbaum, P. R. (2012) Optimal matching with minimal deviation from fine balance in a study of obesity and surgical outcomes.  Biometrics, 68, 628-636.
-
 }

@@ -2,7 +2,7 @@
 \alias{findexact}
 \title{Build an exact match variable given a matrix of covarites ordered by the user according to their importance.}
 \usage{
-findexact(z,E,ncontrol)
+findexact(z,E,ncontrol=1)
 }
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control.}
@@ -10,8 +10,8 @@ findexact(z,E,ncontrol)
 \item{ncontrol}{ The number of controls to be matched to each treated individual.}
 }
 \value{
-\item{miss}{The covariates that cannot be exactly matched}
-\item{variables}{The covariates that can be exactly matched}
+\item{miss}{The covariates that cannot be exactly matched.}
+\item{variables}{The covariates that can be exactly matched.}
 \item{NewExact}{The constructed exact match variable.}
 }
 \description{
