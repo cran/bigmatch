@@ -1,4 +1,4 @@
-optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T){
+optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,ties.all=T,seed=1){
 
   #check input
   stopifnot(is.vector(z))
@@ -20,7 +20,14 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T){
     exactlevels<-(1:nexactlevels)[order_ratio]
   }
 
-  or<-rank(1-p,ties.method='min')
+  if (!ties.all){
+    set.seed(seed)
+    ra<-sample(1:length(z),length(z))
+    z<-z[ra]
+    p<-p[ra]
+    exact<-exact[ra]
+  }
+  or<-rank(p,ties.method='min')
   #sort input
   if (is.null(exact)){
     o<-order(1-p)
@@ -62,17 +69,37 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T){
         }else{
           close<-(dn<=caliper)
         }
+        nexti<-ncontrol
         if (sum(close)==0) return(NULL)
         if (sum(close)>constant){
-          closei<-which(close)[order(dn[close])[1:constant]]
-          if (max(closei)-min(closei)+1>constant){
-            closea<-closei[which(dn[closei]!=max(dn[closei]))]
-            closeb<-which(close)[which(dn[close]==max(dn[closei]))]
-            closeb<-closeb[order(pmin(abs(closeb-min(closea)),abs(closeb-max(closea))))]
-            closeb<-closeb[1:(constant-length(closea))]
-            close<-c(closea,closeb)
-          }else{
+          closei<-which(close)[rank(dn[close],ties.method='min')<=constant]
+          if (ties.all || length(closei)==constant) close<-closei
+          else if (constant==ncontrol){
+            closei<-which(close)[order(dn[close])[1:ncontrol]]
+            if ((cid[closei][1] %in% left) && (cid[closei][constant] %in% right)){
+              nexti<-nexti+1
+              if (nexti+constant-1>nc) return(NULL)
+              else{
+                nextclose<-all(close[order(dn[close])[1:constant]]==close[order(dn[close])[nexti:(nexti+constant-1)]])
+                closei<-which(close)[order(dn[close])[nexti:(nexti+constant-1)]]
+                while(nextclose && (cid[closei][1] %in% left) && (cid[closei][constant] %in% right) && (nexti+constant-1<=nc)){
+                  nexti<-nexti+1
+                  if (nexti+constant-1>nc) return(NULL)
+                  closei<-which(close)[order(dn[close])[nexti:(nexti+constant-1)]]
+                }
+              }
+            }
             close<-closei
+          }else{
+              if(any(dn[closei]!=max(dn[closei]))){
+                closea<-closei[which(dn[closei]!=max(dn[closei]))]
+                closeb<-which(close)[which(dn[close]==max(dn[closei]))]
+                closeb<-closeb[order(pmin(abs(closeb-min(closea)),abs(closeb-max(closea))))]
+                closeb<-closeb[1:(constant-length(closea))]
+                close<-c(closea,closeb)
+              }else{
+                close<-which(close)[1:constant]
+              }
           }
         }
         left[i]<-min(cid[close])
@@ -81,8 +108,24 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T){
       list(left=left,right=right)
     }
 
-    highc<-ub
+    highc<-floor(ub)
     lowc<-lb
+
+    lr<-leftrightc(lowc)
+    if (!is.null(lr)){
+      res<-glover(lr$left,lr$right)
+    }
+    if ((!is.null(lr)) && (res==1)){
+      return(list(constant=floor(lowc),interval=c(floor(lowc),floor(lowc)),interval.length=0))
+    }
+
+    lr<-leftrightc(highc)
+    if (!is.null(lr)){
+      res<-glover(lr$left,lr$right)
+    }
+    if (is.null(lr)||(res==0)){
+      stop('The caliper itself is not feasible.')
+    }
 
     while (((highc-lowc)>tol) && (highc>=1)){
       midc<-(highc+lowc)/2
@@ -92,9 +135,9 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T){
         if (!is.null(lr)){
           res<-glover(lr$left,lr$right)
         }
-        if (is.null(lr)||is.null(res)){
+        if (is.null(lr)||(res==0)){
           lowc<-midc
-        }else highc<-midc
+        }else highc<-floor(midc)
       }
     }
 
@@ -104,7 +147,7 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T){
   if (is.null(exact)){
     use<-c(use1,use0)
     ub<-length(use0)
-    lb<-0
+    lb<-ncontrol
     optconstantone(use1,use0,caliper,ub,lb,tol)
   }else{
     cons<-0
@@ -114,7 +157,7 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T){
       use0e<-use0[ex0==ei]
       use<-c(use1e,use0e)
       ub<-length(use0e)
-      lb<-max(0,cons-tol)
+      lb<-max(ncontrol,cons-tol)
       if (ub>=lb){
         ree<-optconstantone(use1e,use0e,caliper,ub,lb,tol)
         if (cons<ree$constant){

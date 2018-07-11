@@ -9,7 +9,7 @@ nearexPenalty=max.cost, sub=F, subX=NULL)
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control. Must have treated subjects (z=1) before controls (z=0).}
 \item{fine}{ A vector of with length(z)=length(fine) giving the nominal levels
 that are to be nearly-finely balanced.}
-\item{dist}{ A distance list with the starting node (treated subjec), ending
+\item{dist}{ A distance list with the starting node (treated subject), ending
 node (control), the distance between them and whether nearexact is needed for each pair.}
 \item{dat}{ A data frame with length(z) rows.  One output of the program is
 a data frame with some of the rows of dat for the matched sample, together
@@ -29,15 +29,13 @@ of nearexact variables, indicating the penalty for mismatch on each nearexact va
 }
 
 \value{
-\item{feasible}{feasible=1 if the match is feasible or feasible=0 if the match
+\item{feasible}{ feasible=1 if the match is feasible or feasible=0 if the match
 is infeasible.}
-\item{timeinrelax}{Time in RELAX IV spent computing the minimum cost flow.}
-\item{timeinnet}{Time in constructing the network.}
-\item{timeinmatch}{Time in constructing the matched dataset.}
-\item{d}{The matched sample.  Selected rows of dat. The first column indicates which matched set
-the subject belongs to.}
-\item{number}{ Number of edges between the treated subjects and controls in
-the reduced network.}
+\item{timeinrelax}{ Time in RELAX IV spent computing the minimum cost flow.}
+\item{timeinnet}{ Time in constructing the network.}
+\item{timeinmatch}{ Time in constructing the matched dataset.}
+\item{d}{ The matched sample. Selected rows of dat. The first column indicates which matched set the subject belongs to.}
+\item{number}{ Number of edges between the treated subjects and controls in the reduced network.}
 }
 
 \description{
@@ -46,20 +44,15 @@ The program finds an optimal near-fine match given a distance structure with fro
 
 
 \details{
-The match minimizes the total distance between treated subjects and their
-matched controls subject to a near-fine balance constraint imposed as a
-penalty on imbalances.
+The match minimizes the total distance between treated subjects and their matched controls subject to a near-fine balance constraint imposed as a penalty on imbalances.
 
-The distance list only includes pairs closed based on the caliper, i.e. some
-edges are removed from the network.  Because of this, the match may be
-infeasible.  This is reported in feasible.
+The distance list only includes pairs closed based on the caliper and constant, i.e. some edges are removed from the network. Because of this, the match may be infeasible. This is reported in feasible.
 
-For discussion of networks for fine-balance, see Rosenbaum (1989, Section 3)
-and Rosenbaum (2010).
+For discussion of networks for fine-balance, see Rosenbaum (1989, Section 3) and Rosenbaum (2010).
 
-For near-fine balannce balance, see Yang et al. (2012).
+For near-fine balance, see Yang et al. (2012).
 
-You MUST install and load the optmatch package to use nearfine.
+You MUST install and load the optmatch package to use nearfine().
 }
 \examples{
 \dontrun{

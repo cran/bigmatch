@@ -28,7 +28,7 @@ findexact<-function(z,E,ncontrol=1){
   Esub<-as.data.frame(Esub)
   if (sum(r)==0) list(miss=E,variables=NULL,NewExact=NULL)
   else{
-    variables<-transform(Esub, ClusterID = as.numeric(interaction(Esub, drop=TRUE)))
-    list(miss=Emiss,variables=variables[,1:(dim(variables)[2]-1)], NewExact=variables$ClusterID)
+    variables<-transform(Esub, ClusterID=as.numeric(interaction(Esub, drop=TRUE)))
+    list(miss=Emiss,variables=variables[,1:(dim(variables)[2]-1)],NewExact=variables$ClusterID)
   }
 }

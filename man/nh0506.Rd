@@ -11,39 +11,39 @@ Bazzano et al. (2003) noted higher homocysteine levels in smokers than in nonsmo
 \format{
   A data frame with 2475 observations on the following 32 variables.
   \describe{
-    \item{\code{Row}}{a numeric vector}
-    \item{\code{SEQN}}{NHANES id number}
-    \item{\code{female}}{1 if female, 0 if male}
-    \item{\code{age}}{age in years, >=20}
-    \item{\code{black}}{1 if black, 0 otherwise}
-    \item{\code{hispanic}}{1 if hispanic, 0 otherwise}
-    \item{\code{education}}{Education}
-    \item{\code{povertyr}}{Ratio of family income to the poverty level, capped at 5x}
-    \item{\code{creactiveprotein}}{creactive protein}
-    \item{\code{homocysteine}}{homocysteine}
-    \item{\code{cotinine}}{cotinine in blood}
-    \item{\code{cadmium}}{cadmium in blood}
-    \item{\code{lead}}{lead in blood}
-    \item{\code{bmi}}{Body mass index}
-    \item{\code{cigs100life}}{1 if smoked more than 100 cigarettes in lifetime, 0 otherwise}
-    \item{\code{smokenow}}{1 if smokes now, 0 otherwise}
-    \item{\code{cigsdays30}}{Days smoked in last 30 days: 0 if never smoker, 30 if daily smoker}
-    \item{\code{cigsperday30}}{Cigarettes smoked per day in last 30 days}
-    \item{\code{tobacco5days}}{1 =  used tobacco in the last 30 days, 0 otherwise}
-    \item{\code{dailysmoker}}{1 = daily smoker, 0 = never smoker}
-    \item{\code{neversmoker}}{1 = never smoker, 0 = daily smoker}
-    \item{\code{z}}{1 if daily smoker, 0 if never smoker}
-    \item{\code{propens}}{Estimated propensity score.  The score was formed
+    \item{\code{Row}}{ A numeric vector.}
+    \item{\code{SEQN}}{ NHANES id number.}
+    \item{\code{female}}{ 1 if female, 0 if male.}
+    \item{\code{age}}{ Age in years, >=20.}
+    \item{\code{black}}{ 1 if black, 0 otherwise.}
+    \item{\code{hispanic}}{ 1 if hispanic, 0 otherwise.}
+    \item{\code{education}}{ Education.}
+    \item{\code{povertyr}}{ Ratio of family income to the poverty level, capped at 5x.}
+    \item{\code{creactiveprotein}}{ Creactive protein.}
+    \item{\code{homocysteine}}{ Homocysteine.}
+    \item{\code{cotinine}}{ Cotinine in blood.}
+    \item{\code{cadmium}}{ Cadmium in blood.}
+    \item{\code{lead}}{ Lead in blood.}
+    \item{\code{bmi}}{ Body mass index.}
+    \item{\code{cigs100life}}{ 1 if smoked more than 100 cigarettes in lifetime, 0 otherwise.}
+    \item{\code{smokenow}}{ 1 if smokes now, 0 otherwise.}
+    \item{\code{cigsdays30}}{ Days smoked in last 30 days: 0 if never smoker, 30 if daily smoker.}
+    \item{\code{cigsperday30}}{ Cigarettes smoked per day in last 30 days.}
+    \item{\code{tobacco5days}}{ 1 = used tobacco in the last 30 days, 0 otherwise.}
+    \item{\code{dailysmoker}}{ 1 = daily smoker, 0 = never smoker.}
+    \item{\code{neversmoker}}{ 1 = never smoker, 0 = daily smoker.}
+    \item{\code{z}}{ 1 if daily smoker, 0 if never smoker.}
+    \item{\code{propens}}{ Estimated propensity score. The score was formed
     by logit regression of z on female, age, education, black, hispanic, povertyr, and bmi.}
-    \item{\code{pstrat}}{Propensity score strata: \code{(0,0.0733]} \code{(0.0733,0.131]} \code{(0.131,0.204]} \code{(0.204,0.33]} \code{(0.33,1]}}
-    \item{\code{age3}}{Age in 3 categories}
-    \item{\code{ed3}}{Education in 3 categories}
-    \item{\code{bmi3}}{BMI in 3 categories}
-    \item{\code{pov2}}{Income above 2 times poverty, TRUE or FALSE}
-    \item{\code{stf}}{A factor defining strata using female, age3, ed3, bmi3 pov2. }
-    \item{\code{st}}{A numeric version of stf}
-    \item{\code{stfp}}{A factor defining strata using stf and pstrat}
-    \item{\code{stp}}{A numeric version of stp}
+    \item{\code{pstrat}}{ Propensity score strata: \code{(0,0.0733]} \code{(0.0733,0.131]} \code{(0.131,0.204]} \code{(0.204,0.33]} \code{(0.33,1]}}
+    \item{\code{age3}}{ Age in 3 categories.}
+    \item{\code{ed3}}{ Education in 3 categories.}
+    \item{\code{bmi3}}{ BMI in 3 categories.}
+    \item{\code{pov2}}{ Income above 2 times poverty, TRUE or FALSE.}
+    \item{\code{stf}}{ A factor defining strata using female, age3, ed3, bmi3 pov2.}
+    \item{\code{st}}{ A numeric version of stf.}
+    \item{\code{stfp}}{ A factor defining strata using stf and pstrat.}
+    \item{\code{stp}}{ A numeric version of stp.}
   }
 }
 \details{

@@ -25,7 +25,7 @@ optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=T){
     exactlevels<-(1:nexactlevels)[order_ratio]
   }
 
-  or<-rank(1-p,ties.method='min')
+  or<-rank(p,ties.method='min')
   #sort input
   if (is.null(exact)){
     o<-order(1-p)
@@ -70,12 +70,28 @@ optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=T){
     highc<-ub
     lowc<-lb
 
+    lr<-leftright(lowc)
+    if (!is.null(lr)){
+      res<-glover(lr$left,lr$right)
+    }
+    if ((!is.null(lr)) && (res==1)){
+      return(list(caliper=lowc,interval=c(lowc,lowc),interval.length=0))
+    }
+
+    lr<-leftright(highc)
+    if (!is.null(lr)){
+      res<-glover(lr$left,lr$right)
+    }
+    if (is.null(lr)||(res==0)){
+      stop('There is no feasible matching.')
+    }
+
     while ((highc-lowc)>tol){
       midc<-(highc+lowc)/2
       lr<-leftright(midc)
       if (!is.null(lr)){
         res<-glover(lr$left,lr$right)}
-      if (is.null(lr)||is.null(res)){
+      if (is.null(lr)||(res==0)){
         lowc<-midc
       }
       else highc<-midc

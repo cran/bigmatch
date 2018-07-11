@@ -4,7 +4,7 @@
 \usage{
 nfmatch(z, p, fine, X, dat, caliper, constant=NULL, ncontrol=1, rank=T, exact=NULL,
 penalty=1000, max.cost=penalty/10, nearexact=NULL, nearexPenalty=max.cost,
-Xextra=NULL, weight=NULL, sub=F, subX=NULL)
+Xextra=NULL, weight=NULL, sub=F, subX=NULL, ties.all=T, seed=1)
 }
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control.}
@@ -28,19 +28,21 @@ of nearexact variables, indicating the penalty for mismatch on each nearexact va
 \item{weight}{ The weight for Mahalanobis distance of Xextra.}
 \item{sub}{ An indicator of whether optimal subset matching is required.}
 \item{subX}{ If a subset matching is required, the variable that the subset matching is based on, i.e. only minimum of number of treated and controls will be matched.}
+\item{ties.all}{ If ties.all is True, include all ties while choosing nearest neighbors. In this case, some treated may have more than constant controls. Otherwise, randomly select one or several controls to make sure there are no more than constant controls for each treated unit.}
+\item{seed}{ When ties.all is False, seed for randomly select one or several controls when there are ties.}
 }
 
 \value{
 If the match is infeasible, a warning is issued.  Otherwise, a list of results is returned.
 
 A match may be infeasible if the caliper is too small, or ncontrol is too large, or if exact matching for exact is impossible.
-\item{data}{The matched sample.  Selected rows of dat.}
-\item{timeinrelax}{Time in RELAX IV spent computing the minimum cost flow.}
+\item{data}{ The matched sample.  Selected rows of dat.}
+\item{timeinrelax}{ Time in RELAX IV spent computing the minimum cost flow.}
 \item{edgenum}{ Number of edges between the treated subjects and controls in
 the reduced network.}
-\item{timeind}{Time in calculating robust Mahalanobis distance between connected pairs.}
-\item{timeinnet}{Time in constructing the network.}
-\item{timeinmatch}{Time in constructing the matched dataset.}
+\item{timeind}{ Time in calculating robust Mahalanobis distance between connected pairs.}
+\item{timeinnet}{ Time in constructing the network.}
+\item{timeinmatch}{ Time in constructing the matched dataset.}
 }
 
 \description{
@@ -53,7 +55,7 @@ The match minimizes the total distance between treated subjects and their matche
 subject to a near-fine balance constraint imposed as a penalty on imbalances.
 
 For discussion of networks for fine-balance, see Rosenbaum (1989, Section 3) and Rosenbaum (2010).
-For near-fine balannce balance, see Yang et al. (2012).
+For near-fine balance, see Yang et al. (2012).
 
 You MUST install and load the optmatch package to use nearfine.
 }
@@ -61,7 +63,7 @@ You MUST install and load the optmatch package to use nearfine.
 # To run this example, you must load the optmatch package.
 
 # Caliper of .3 on the propensity score, near fine balance of
-# education, a robust Mahalanobis distrance for X.
+# education, a robust Mahalanobis distance for X.
 data(nh0506)
 attach(nh0506)
 X<-cbind(female,age,black,hispanic,education,povertyr,bmi)

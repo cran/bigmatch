@@ -1,4 +1,4 @@
-glover<-function(left,right,mm=F){
+glover<-function(left,right){
 
   nx<-length(left)
   ny<-max(right)
@@ -33,7 +33,6 @@ glover<-function(left,right,mm=F){
     }
   }
   if (sum(is.na(mx))==0){
-    return(data.frame(mx,my))
-  }else if (mm) return(data.frame(mx,my))
-  else return(NULL)
+    return(1)
+  }else return(0)
 }

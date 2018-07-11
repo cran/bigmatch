@@ -6,19 +6,19 @@ optcal(z, p, exact=NULL, ncontrol=1, tol=NULL, rank=T)
 }
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control.}
-\item{p}{ A vector with the same length as z.  The best caliper for p is found. Often p is the propensity score.}
+\item{p}{ A vector with the same length as z. The best caliper for p or rank of p is found. Often p is the propensity score.}
 \item{exact}{ If exact is NULL, then there is no exact matching, and the caliper refers to p alone.  Otherwise, exact is a vector of the same length as z for exact matching, such that two individuals, i and j, can be matched only if they have the same value of exact, exact[i]=exact[j].  In this case, the caliper is best among calipers that permit exact matching for exact.  Typically, exact has a moderate number of possible values, far fewer than length(z).}
 \item{ncontrol}{ A positive integer giving the number of controls to be matched to each treated subject.  If ncontrol is too large, the match will be infeasible.}
 \item{tol}{ The tolerance.  The optimal caliper is determined with an error of at most tol.  tol=0.01 might be used for the propensity score, as it takes values between 0 and 1, whereas tol=1/2 for p=age would mean that the caliper for age errs by at most half a year.}
 \item{rank}{ An indicator of whether we want a caliper on rank of p or p.}
 }
 \value{
-\item{caliper}{The optimal caliper, with an error of at most tol.  This caliper is a little too large, at most tol too large, but because its error is on the high side, a match with this caliper does exist.}
-\item{interval}{An interval that contains the best caliper. The upper bound of the interval was returned as caliper above.}
-\item{interval.length}{The length of interval. By definition, length.interval<=tol.}
+\item{caliper}{ The optimal caliper, with an error of at most tol.  This caliper is a little too large, at most tol too large, but because its error is on the high side, a match with this caliper does exist.}
+\item{interval}{ An interval that contains the best caliper. The upper bound of the interval was returned as caliper above.}
+\item{interval.length}{ The length of interval. By definition, length.interval<=tol.}
 }
 \description{
-Finds the smallest caliper on variable p or rank of p such that a treated-control matching with that caliper exists.  If exact is not NULL, then finds the smallest caliper on p or rank of p such that a treated-control matching with that caliper exists while also matching exact for the variable exact.
+Finds the smallest caliper on variable p or rank of p such that a treated-control matching with that caliper exists.  If exact is not NULL, then finds the smallest caliper on p or rank of p such that a treated-control matching with that caliper exists while also matching exactly for the variable exact.
 }
 \details{
 The method uses binary search to find the optimal caliper.  At each step in the search, it applies Glover's algorithm to determine whether a proposed caliper is feasible.
@@ -46,7 +46,7 @@ detach(nh0506)
 
 }
 \references{
-Glover, F. (1967). Maximum Matching In Convex Bipartite Graphs.  Naval Research Logistics Quarterly, 14, pp 313-316.
+Glover, F. (1967). Maximum matching in convex bipartite graphs. Naval Research Logistics Quarterly, 14, pp 313-316.
 
-Lipski, W., Jr, and Preparata, F. P. (1981). Efficient Algorithms For Finding Maximum Matchings In Convex Bipartite Graphs And Related Problems.  Journal Acta Informatica, 15, 4, pp 329-346.
+Lipski, W., Jr, and Preparata, F. P. (1981). Efficient algorithms for finding maximum matchings in convex bipartite graphs and related problems. Journal Acta Informatica, 15, 4, pp 329-346.
 }

@@ -1,4 +1,4 @@
-smahal<-function(z,p,X,caliper,constant=NULL,exact=NULL,nearexact=NULL,Xextra=NULL,weight=NULL){
+smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NULL,Xextra=NULL,weight=NULL,ties.all=T){
   if (is.data.frame(X)) X<-as.matrix(X)
   if (is.vector(X)) X<-matrix(X,length(X),1)
   mode(X)<-'numeric'
@@ -90,6 +90,8 @@ smahal<-function(z,p,X,caliper,constant=NULL,exact=NULL,nearexact=NULL,Xextra=NU
   start_node<-c()
   end_node<-c()
   nearex<-c()
+  left<-rep(NA,m)
+  right<-left
   for (i in 1:m){
     #use caliper
     d<-abs(p1[i]-p0)
@@ -99,10 +101,45 @@ smahal<-function(z,p,X,caliper,constant=NULL,exact=NULL,nearexact=NULL,Xextra=NU
     if (!any(who)) return(NULL)
     num<-sum(who)
     #use constant
+    nexti<-ncontrol
     if (!is.null(constant)){
       if(num>constant){
-        who<-which(who)[order(d[who])[1:constant]]
-        num<- constant
+#        who<-which(who)[order(d[who])[1:constant]]
+#        num<- constant
+        whoi<-which(who)[rank(d[who],ties.method='min')<=constant]
+        if (ties.all || length(whoi)==constant){
+          who<-whoi
+          num<-length(who)
+        }else if (constant==ncontrol){
+          whoi<-which(who)[order(d[who])[1:ncontrol]]
+          if ((cids[whoi][1] %in% left) && (cids[whoi][constant] %in% right)){
+            nexti<-nexti+1
+            if (nexti+constant-1>n-m) return(NULL)
+            else{
+              nextclose<-all(who[order(d[who])[1:constant]]==who[order(d[who])[nexti:(nexti+constant-1)]])
+              whoi<-which(who)[order(d[who])[nexti:(nexti+constant-1)]]
+              while(nextclose && (cids[whoi][1] %in% left) && (cids[whoi][constant] %in% right) && (nexti+constant-1<=n-m)){
+                nexti<-nexti+1
+                if (nexti+constant-1>n-m) return(NULL)
+                whoi<-which(who)[order(d[who])[nexti:(nexti+constant-1)]]
+              }
+            }
+          }
+          who<-whoi
+          num<- constant
+          left[i]<-min(cids[who])
+          right[i]<-max(cids[who])
+        }else if(any(d[whoi]!=max(d[whoi]))){
+          closea<-whoi[which(d[whoi]!=max(d[whoi]))]
+          closeb<-which(who)[which(d[who]==max(d[whoi]))]
+          closeb<-closeb[order(pmin(abs(closeb-min(closea)),abs(closeb-max(closea))))]
+          closeb<-closeb[1:(constant-length(closea))]
+          who<-c(closea,closeb)
+          num<- constant
+        }else{
+          who<-which(who)[1:constant]
+          num<- constant
+        }
       }
     }
     cc<-X0[who,]

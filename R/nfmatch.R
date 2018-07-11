@@ -1,4 +1,4 @@
-nfmatch<-function(z,p,fine,X,dat,caliper,constant=NULL,ncontrol=1,rank=T,exact=NULL,penalty=1000,max.cost=penalty/10,nearexact=NULL,nearexPenalty=max.cost,Xextra=NULL,weight=NULL,sub=F,subX=NULL){
+nfmatch<-function(z,p,fine,X,dat,caliper,constant=NULL,ncontrol=1,rank=T,exact=NULL,penalty=1000,max.cost=penalty/10,nearexact=NULL,nearexPenalty=max.cost,Xextra=NULL,weight=NULL,sub=F,subX=NULL,ties.all=T,seed=1){
 
   #Check input
   stopifnot(is.data.frame(dat))
@@ -49,6 +49,23 @@ nfmatch<-function(z,p,fine,X,dat,caliper,constant=NULL,ncontrol=1,rank=T,exact=N
     }
   }
 
+  if (!ties.all){
+    set.seed(seed)
+    ra<-sample(1:nobs,nobs)
+    z<-z[ra]
+    p<-p[ra]
+    exact<-exact[ra]
+    fine<-fine[ra]
+    X<-X[ra,]
+    dat<-dat[ra,]
+    if (!is.null(nearexact)) nearexact<-nearexact[ra,]
+    if (!is.null(Xextra)) Xextra<-Xextra[ra,]
+    if (!is.null(subX)) subX<-subX[ra]
+    if (is.vector(X)) X<-matrix(X,length(X),1)
+    if (is.vector(nearexact)) nearexact<-matrix(nearexact,length(nearexact),1)
+    if (is.vector(Xextra)) Xextra<-matrix(Xextra,length(Xextra),1)
+  }
+
   #sort input
   if (is.null(exact)){
     o<-order(1-p)
@@ -57,7 +74,7 @@ nfmatch<-function(z,p,fine,X,dat,caliper,constant=NULL,ncontrol=1,rank=T,exact=N
     exact<-exact[o]
   }
 
-  or<-rank(1-p,ties.method='min')
+  or<-rank(p,ties.method='min')
   z<-z[o]
   p<-p[o]
   or<-or[o]
@@ -71,9 +88,9 @@ nfmatch<-function(z,p,fine,X,dat,caliper,constant=NULL,ncontrol=1,rank=T,exact=N
   #do match
   timeind<-proc.time()
   if (rank){
-    dist<-smahal(z,or,X,caliper,constant,exact,nearexact,Xextra,weight)
+    dist<-smahal(z,or,X,caliper,constant,ncontrol,exact,nearexact,Xextra,weight,ties.all)
   }else{
-    dist<-smahal(z,p,X,caliper,constant,exact,nearexact,Xextra,weight)
+    dist<-smahal(z,p,X,caliper,constant,ncontrol,exact,nearexact,Xextra,weight,ties.all)
   }
   timeind<-proc.time()-timeind
   m<-nearfine(z,fine,dist,dat,X,ncontrol,penalty,max.cost,nearexPenalty,sub,subX)
