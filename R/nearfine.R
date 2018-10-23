@@ -1,4 +1,4 @@
-nearfine<-function(z,fine,dist,dat,X,ncontrol=1,penalty=1000,max.cost=penalty/10,nearexPenalty=max.cost,sub=F,subX=NULL){
+nearfine<-function(z,fine,dist,dat,ncontrol=1,penalty=1000,max.cost=penalty/10,nearexPenalty=max.cost,subX=NULL){
   stopifnot(is.data.frame(dat))
   stopifnot(is.vector(z))
   stopifnot(is.vector(fine))
@@ -13,9 +13,17 @@ nearfine<-function(z,fine,dist,dat,X,ncontrol=1,penalty=1000,max.cost=penalty/10
   }
 
   nobs<-length(z)
-  ntreat<-sum(z)
+  #Must have treated first
+  if(!(min(z[1:(nobs-1)]-z[2:nobs])>=0)){
+    o<-order(1-z)
+    z<-z[o]
+    dat<-dat[o,]
+    fine<-fine[o]
+    if (!is.null(subX)) subX<-subX[o]
+  }
+
   timeinnet<-proc.time()
-  net<-netfine(z,fine,dist,ncontrol,penalty,max.cost,nearexPenalty,sub,subX)
+  net<-netfine(z,fine,dist,ncontrol,penalty,max.cost,nearexPenalty,subX)
   timeinnet<-proc.time()-timeinnet
   timeinrelax<-proc.time()
   output<-rcbalance::callrelax(net)
@@ -39,12 +47,13 @@ nearfine<-function(z,fine,dist,dat,X,ncontrol=1,penalty=1000,max.cost=penalty/10
     matches<-as.matrix(plyr::daply(match.df, plyr::.(match.df$treat),
                                      function(treat.edges) treat.edges$control[treat.edges$x==1],.drop_o=FALSE))
     n<-length(z)
+    ntreat<-sum(z)
     id1<-(1:n)[z==1]
     id0<-(1:n)[z==0]
     matchid<-matrix(c(id1[as.numeric(row.names(matches))],id0[as.vector((matches-sum(z)))]),ncol=ncontrol+1)
     matchid<-as.vector(t(matchid))
     dat1<-dat[matchid,]
-    mset<-rep(1:ntreat,each=ncontrol+1)
+    mset<-rep(1:length(matches),each=ncontrol+1)
     dat1<-cbind(mset,dat1)
     timeinmatch<-proc.time()-timeinmatch
     list(feasible=output$feasible,timeinrelax=timeinrelax,timeinnet=timeinnet,timeinmatch=timeinmatch,d=dat1,number=net$tcarcs)

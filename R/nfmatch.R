@@ -1,4 +1,4 @@
-nfmatch<-function(z,p,fine,X,dat,caliper,constant=NULL,ncontrol=1,rank=T,exact=NULL,penalty=1000,max.cost=penalty/10,nearexact=NULL,nearexPenalty=max.cost,Xextra=NULL,weight=NULL,sub=F,subX=NULL,ties.all=T,seed=1){
+nfmatch<-function(z,p,fine=rep(1,length(z)),X,dat,caliper,constant=NULL,ncontrol=1,rank=T,exact=NULL,penalty=1000,max.cost=penalty/10,nearexact=NULL,nearexPenalty=max.cost,Xextra=NULL,weight=NULL,subX=NULL,ties.all=T,seed=1){
 
   #Check input
   stopifnot(is.data.frame(dat))
@@ -18,22 +18,26 @@ nfmatch<-function(z,p,fine,X,dat,caliper,constant=NULL,ncontrol=1,rank=T,exact=N
   ntreat<-sum(z)
   ncontr<-sum(1-z)
   stopifnot(ncontr>=(ncontrol*ntreat))
-  if (is.data.frame(X)) X<-as.matrix(X)
-  if (is.vector(X)) X<-matrix(X,length(X),1)
+  if (is.data.frame(X)){
+    X<-as.data.frame(unclass(X))
+    X<-data.matrix(X)
+  }
+  if (is.vector(X)) X<-matrix(X,nrow=length(z))
   if (is.data.frame(nearexact)) nearexact<-as.matrix(nearexact)
   if (is.factor(nearexact)){
     levels(nearexact)<-1:nlevels(nearexact)
     nearexact<-as.numeric(nearexact)
   }
   if (is.vector(nearexact)) nearexact<-matrix(nearexact,length(nearexact),1)
-  if (is.data.frame(Xextra)) Xextra<-as.matrix(Xextra)
+  if (is.data.frame(Xextra)){
+    Xextra<-as.data.frame(unclass(Xextra))
+    Xextra<-data.matrix(Xextra)
+  }
   if (is.vector(Xextra)) Xextra<-matrix(Xextra,length(Xextra),1)
   stopifnot(length(z)==(dim(X)[1]))
   stopifnot(length(z)==(dim(dat)[1]))
   stopifnot(caliper>=0)
-  if (!is.null(constant)) stopifnot(constant>=0)
-  if (!sub) stopifnot(is.null(subX))
-  if (sub) stopifnot(!is.null(subX))
+  if (!is.null(constant)) stopifnot(constant>=1)
   if (!is.null(subX)){
     if (is.factor(subX)){
       levels(subX)<-1:nlevels(subX)
@@ -84,16 +88,37 @@ nfmatch<-function(z,p,fine,X,dat,caliper,constant=NULL,ncontrol=1,rank=T,exact=N
   if (!is.null(nearexact)) nearexact<-nearexact[o,]
   if (!is.null(Xextra)) Xextra<-Xextra[o,]
   if (!is.null(subX)) subX<-subX[o]
+  if (is.vector(X)) X<-matrix(X,length(X),1)
+  if (is.vector(nearexact)) nearexact<-matrix(nearexact,length(nearexact),1)
+  if (is.vector(Xextra)) Xextra<-matrix(Xextra,length(Xextra),1)
+
+  #Must have treated first
+  if(!(min(z[1:(nobs-1)]-z[2:nobs])>=0)){
+    o<-order(1-z)
+    z<-z[o]
+    p<-p[o]
+    or<-or[o]
+    X<-X[o,]
+    dat<-dat[o,]
+    fine<-fine[o]
+    if (!is.null(exact)) exact<-exact[o]
+    if (!is.null(nearexact)) nearexact<-nearexact[o,]
+    if (!is.null(Xextra)) Xextra<-Xextra[o,]
+    if (!is.null(subX)) subX<-subX[o]
+    if (is.vector(X)) X<-matrix(X,length(X),1)
+    if (is.vector(nearexact)) nearexact<-matrix(nearexact,length(nearexact),1)
+    if (is.vector(Xextra)) Xextra<-matrix(Xextra,length(Xextra),1)
+  }
 
   #do match
   timeind<-proc.time()
   if (rank){
-    dist<-smahal(z,or,X,caliper,constant,ncontrol,exact,nearexact,Xextra,weight,ties.all)
+    dist<-smahal(z,or,X,caliper,constant,ncontrol,exact,nearexact,Xextra,weight,subX,ties.all)
   }else{
-    dist<-smahal(z,p,X,caliper,constant,ncontrol,exact,nearexact,Xextra,weight,ties.all)
+    dist<-smahal(z,p,X,caliper,constant,ncontrol,exact,nearexact,Xextra,weight,subX,ties.all)
   }
   timeind<-proc.time()-timeind
-  m<-nearfine(z,fine,dist,dat,X,ncontrol,penalty,max.cost,nearexPenalty,sub,subX)
+  m<-nearfine(z,fine,dist,dat,ncontrol,penalty,max.cost,nearexPenalty,subX)
   if(m[[1]]==0) {
     if (!is.null(exact)) warning("The match you requested is infeasible.  Reconsider caliper, ncontrol and exact.")
     else warning("The match you requested is infeasible, perhaps because the caliper is too small.")

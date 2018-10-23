@@ -32,7 +32,5 @@ glover<-function(left,right){
       ne<-ne+1
     }
   }
-  if (sum(is.na(mx))==0){
-    return(1)
-  }else return(0)
+  return(1-sum(is.na(mx))/nx)
 }

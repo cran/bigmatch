@@ -1,16 +1,16 @@
-smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NULL,Xextra=NULL,weight=NULL,ties.all=T){
-  if (is.data.frame(X)) X<-as.matrix(X)
-  if (is.vector(X)) X<-matrix(X,length(X),1)
-  mode(X)<-'numeric'
-  if (is.data.frame(nearexact)) nearexact<-as.matrix(nearexact)
+smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NULL,Xextra=NULL,weight=NULL,subX=NULL,ties.all=T){
+  if (is.data.frame(X)){
+    X<-as.data.frame(unclass(X))
+    X<-data.matrix(X)
+  }
+  if (is.vector(X)) X<-matrix(X,nrow=length(z))
+  if (is.data.frame(nearexact)) nearexact<-data.matrix(nearexact)
   if (is.vector(nearexact)) nearexact<-as.matrix(nearexact,ncol=1)
-  if (is.data.frame(Xextra)) Xextra<-as.matrix(Xextra)
-  if (is.vector(Xextra)) Xextra<-matrix(Xextra,ncol=1)
   stopifnot(is.matrix(X))
   stopifnot(is.vector(z))
   stopifnot(all((z==1)|(z==0)))
   stopifnot(length(z)==(dim(X)[1]))
-  stopifnot(caliper>0)
+  stopifnot(caliper>=0)
   if (!is.null(constant)){
     if (!is.integer(constant)) constant<-floor(constant)
   }
@@ -19,12 +19,18 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
     stopifnot(length(exact)==length(z))
     tb<-table(z,exact)
     if (!all(tb[2,]<=tb[1,])){
-       stop("An exact match for exact is infeasible for every caliper.")
+      if (is.null(subX) || any(exact!=subX)){
+        stop("An exact match for exact is infeasible for every caliper.")
+      }
     }
   }
 
   if (!is.null(Xextra) & is.null(weight)) weight<-(dim(matrix(X,nrow=length(z)))[2])/(dim(matrix(Xextra,nrow=length(z)))[2])
-
+  if (is.data.frame(Xextra)){
+    Xextra<-as.data.frame(unclass(Xextra))
+    Xextra<-data.matrix(Xextra)
+  }
+  if (is.vector(Xextra)) Xextra<-matrix(Xextra,ncol=1)
   n<-dim(X)[1]
 
   #Must have treated first
@@ -90,15 +96,15 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
   start_node<-c()
   end_node<-c()
   nearex<-c()
-  left<-rep(NA,m)
-  right<-left
+
+
   for (i in 1:m){
     #use caliper
     d<-abs(p1[i]-p0)
     who<-d<=caliper
     #use exact
     if (!is.null(exact)) who<-who&(exact1[i]==exact0)
-    if (!any(who)) return(NULL)
+    if (!any(who) & is.null(subX)) return(NULL)
     num<-sum(who)
     #use constant
     nexti<-ncontrol
@@ -166,6 +172,7 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
       else nearex<-rbind(nearex, nearex1[i,]!=nearex0[who,])
     }
   }
+
   out<-list(d=distance,start=start_node,end=end_node,nearex=nearex)
   out
 }

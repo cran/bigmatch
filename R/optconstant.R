@@ -1,4 +1,4 @@
-optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,ties.all=T,seed=1){
+optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,subX=NULL,ties.all=T,seed=1){
 
   #check input
   stopifnot(is.vector(z))
@@ -7,18 +7,30 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,ties.a
   stopifnot(all((z==1)|(z==0)))
   stopifnot(sum(z)*ncontrol<=sum(1-z))
 
+  if (!is.null(subX)){
+    subX<-as.factor(subX)
+    nsubXlevels<-nlevels(subX)
+    levels(subX)<-1:nsubXlevels
+  }
+
   if (!is.null(exact)){
     exact<-as.factor(exact)
     nexactlevels<-nlevels(exact)
     levels(exact)<-1:nexactlevels
     tb<-table(z,exact)
-    if (!all(tb[2,]<=tb[1,])){
-      stop("An exact match for exact is infeasible for every caliper.")
+
+    if (is.null(subX)) TF<-T
+    else TF<-(all(tb[2,]<=tb[1,])||(nlevels(exact)!=nlevels(subX)) ||any(exact!=subX))
+    if (!all(tb[2 ,]<=tb[1,])){
+      if (is.null(subX) || TF){
+        stop("An exact match for exact is infeasible for every caliper.")
+      }
     }
     ratio<-tb[1,]/tb[2,]
     order_ratio<-order(ratio)
     exactlevels<-(1:nexactlevels)[order_ratio]
   }
+  else TF<-T
 
   if (!ties.all){
     set.seed(seed)
@@ -70,7 +82,7 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,ties.a
           close<-(dn<=caliper)
         }
         nexti<-ncontrol
-        if (sum(close)==0) return(NULL)
+        if ((sum(close)==0) & TF) return(NULL)
         if (sum(close)>constant){
           closei<-which(close)[rank(dn[close],ties.method='min')<=constant]
           if (ties.all || length(closei)==constant) close<-closei
@@ -91,15 +103,15 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,ties.a
             }
             close<-closei
           }else{
-              if(any(dn[closei]!=max(dn[closei]))){
-                closea<-closei[which(dn[closei]!=max(dn[closei]))]
-                closeb<-which(close)[which(dn[close]==max(dn[closei]))]
-                closeb<-closeb[order(pmin(abs(closeb-min(closea)),abs(closeb-max(closea))))]
-                closeb<-closeb[1:(constant-length(closea))]
-                close<-c(closea,closeb)
-              }else{
-                close<-which(close)[1:constant]
-              }
+            if(any(dn[closei]!=max(dn[closei]))){
+              closea<-closei[which(dn[closei]!=max(dn[closei]))]
+              closeb<-which(close)[which(dn[close]==max(dn[closei]))]
+              closeb<-closeb[order(pmin(abs(closeb-min(closea)),abs(closeb-max(closea))))]
+              closeb<-closeb[1:(constant-length(closea))]
+              close<-c(closea,closeb)
+            }else{
+              close<-which(close)[1:constant]
+            }
           }
         }
         left[i]<-min(cid[close])
@@ -115,7 +127,7 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,ties.a
     if (!is.null(lr)){
       res<-glover(lr$left,lr$right)
     }
-    if ((!is.null(lr)) && (res==1)){
+    if ((!is.null(lr)) && (res>=min(nt,nc)/nt)){
       return(list(constant=floor(lowc),interval=c(floor(lowc),floor(lowc)),interval.length=0))
     }
 
@@ -123,7 +135,7 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,ties.a
     if (!is.null(lr)){
       res<-glover(lr$left,lr$right)
     }
-    if (is.null(lr)||(res==0)){
+    if (is.null(lr)||(res<min(nt,nc)/nt)){
       stop('The caliper itself is not feasible.')
     }
 
@@ -135,7 +147,7 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,ties.a
         if (!is.null(lr)){
           res<-glover(lr$left,lr$right)
         }
-        if (is.null(lr)||(res==0)){
+        if (is.null(lr)||(res<min(nt,nc)/nt)){
           lowc<-midc
         }else highc<-floor(midc)
       }

@@ -2,33 +2,29 @@
 \alias{nfmatch}
 \title{Minimum-distance near-fine matching.}
 \usage{
-nfmatch(z, p, fine, X, dat, caliper, constant=NULL, ncontrol=1, rank=T, exact=NULL,
-penalty=1000, max.cost=penalty/10, nearexact=NULL, nearexPenalty=max.cost,
-Xextra=NULL, weight=NULL, sub=F, subX=NULL, ties.all=T, seed=1)
+nfmatch(z, p, fine=rep(1,length(z)), X, dat, caliper, constant=NULL, ncontrol=1,
+rank=T, exact=NULL, penalty=1000, max.cost=penalty/10, nearexact=NULL,
+nearexPenalty=max.cost, Xextra=NULL, weight=NULL, subX=NULL, ties.all=T, seed=1)
 }
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control.}
-\item{p}{ A vector of with length(z)=length(p) giving the numeric values of the variable to be matched with a caliper.  Typically, p is the propensity score.  If p takes a few levels, exact matching for p is attempted if caliper=0.  }
+\item{p}{ A vector of with length(z)=length(p) giving the numeric values of the variable to be matched with a caliper.  Typically, p is the propensity score.  If p takes a few levels, exact matching for p is attempted if caliper=0. If no caliper is intended to apply, set p=rep(1,length(z)) and caliper=1.}
 \item{fine}{ A vector of with length(z)=length(fine) giving the nominal levels that are to be nearly-finely balanced.}
 \item{X}{ A matrix of covariates used to create a robust Mahalanobis distance.  X must have length(z) rows.}
-\item{dat}{ A data frame with length(z) rows.  If the match is feasible, the
-matched portion of dat is returned with additional columns that define the match.}
-\item{caliper}{ If two individuals differ on p by more than caliper, we will not calculate the distance for this pair.  If caliper is too small, the match may be infeasible.}
+\item{dat}{ A data frame with length(z) rows.  If the match is feasible, the matched portion of dat is returned with additional columns that define the match.}
+\item{caliper}{ If two individuals differ on p by more than caliper, we will not calculate the distance for this pair.  If caliper is too small, the match may be infeasible. If no caliper is intended to apply, set p=rep(1,length(z)) and caliper=1.}
 \item{constant}{ If there are more than constant controls for a treated differ on p within caliper, we select the constant closest controls.}
 \item{ncontrol}{ A positive integer giving the number of controls to be matched to each treated subject.  If ncontrol is too large, the match will be infeasible.}
 \item{rank}{ An indicator of whether we want a caliper on rank of p or p.}
 \item{exact}{ If not NULL, then a vector of length(z)=length(p) giving variable that need to be exactly matched. }
 \item{penalty}{ A numeric penalty imposed for each violation of fine balance.}
 \item{max.cost}{ The maximum cost for the each pair of treated and control while rounding the cost.}
-\item{nearexact}{ If not NULL, then a vector or matrix with length(z) rows giving variables (ordered by the user according to their importance) that need to be exactly matched. If it is not possible to exactly match all variables, we will select as many important variables as we can.}
-\item{nearexPenalty}{ The penalty for a mismatch on nearexact. If it is a number, then use the same
-penalty for all nearexact variables. Otherwise, it should be a vector of length the same as number
-of nearexact variables, indicating the penalty for mismatch on each nearexact variable.}
+\item{nearexact}{ If not NULL, then a vector of length length(z) or matrix with length(z) rows giving variables that need to be exactly matched. If it is not possible to exactly match all variables, we will exactly match as many variables as we can.}
+\item{nearexPenalty}{ The penalty for a mismatch on nearexact. If it is a number, then use the same penalty for all nearexact variables. Otherwise, it should be a vector of length the same as number of nearexact variables, indicating the penalty for mismatch on each nearexact variable. The larger nearexPenalty is, the more priorty the variable get in near-exact match.}
 \item{Xextra}{ If not NULL, another robust Mahalanobis distance based on Xextra  is calculated. The distance between treated-control pair is a weighted sum of the two distances.}
 \item{weight}{ The weight for Mahalanobis distance of Xextra.}
-\item{sub}{ An indicator of whether optimal subset matching is required.}
-\item{subX}{ If a subset matching is required, the variable that the subset matching is based on, i.e. only minimum of number of treated and controls will be matched.}
-\item{ties.all}{ If ties.all is True, include all ties while choosing nearest neighbors. In this case, some treated may have more than constant controls. Otherwise, randomly select one or several controls to make sure there are no more than constant controls for each treated unit.}
+\item{subX}{ If a subset matching is required, the variable that the subset matching is based on. That is, for each level of subX, extra treated will be discarded in order to have the number of matched treated subjects being the minimum size of treated and control groups. If exact matching on a variable x is desired and discarding extra treated is fine if there are more treated than controls for a certain level k, set exact=x, subX=x.}
+\item{ties.all}{ If ties.all is True, include all ties while choosing nearest neighbors. In this case, some treated may have more than constant controls. Otherwise, randomly select one or several controls to make sure there are not more than constant controls for each treated.}
 \item{seed}{ When ties.all is False, seed for randomly select one or several controls when there are ties.}
 }
 
@@ -36,13 +32,13 @@ of nearexact variables, indicating the penalty for mismatch on each nearexact va
 If the match is infeasible, a warning is issued.  Otherwise, a list of results is returned.
 
 A match may be infeasible if the caliper is too small, or ncontrol is too large, or if exact matching for exact is impossible.
-\item{data}{ The matched sample.  Selected rows of dat.}
-\item{timeinrelax}{ Time in RELAX IV spent computing the minimum cost flow.}
+\item{data}{The matched sample.  Selected rows of dat.}
+\item{timeinrelax}{Time in RELAX IV spent computing the minimum cost flow.}
 \item{edgenum}{ Number of edges between the treated subjects and controls in
 the reduced network.}
-\item{timeind}{ Time in calculating robust Mahalanobis distance between connected pairs.}
-\item{timeinnet}{ Time in constructing the network.}
-\item{timeinmatch}{ Time in constructing the matched dataset.}
+\item{timeind}{Time in calculating robust Mahalanobis distance between connected pairs.}
+\item{timeinnet}{Time in constructing the network.}
+\item{timeinmatch}{Time in constructing the matched dataset.}
 }
 
 \description{
@@ -55,7 +51,7 @@ The match minimizes the total distance between treated subjects and their matche
 subject to a near-fine balance constraint imposed as a penalty on imbalances.
 
 For discussion of networks for fine-balance, see Rosenbaum (1989, Section 3) and Rosenbaum (2010).
-For near-fine balance, see Yang et al. (2012).
+For near-fine balannce balance, see Yang et al. (2012).
 
 You MUST install and load the optmatch package to use nearfine.
 }
@@ -63,7 +59,7 @@ You MUST install and load the optmatch package to use nearfine.
 # To run this example, you must load the optmatch package.
 
 # Caliper of .3 on the propensity score, near fine balance of
-# education, a robust Mahalanobis distance for X.
+# education, a robust Mahalanobis distrance for X.
 data(nh0506)
 attach(nh0506)
 X<-cbind(female,age,black,hispanic,education,povertyr,bmi)

@@ -1,4 +1,4 @@
-netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearexPenalty=max.cost,sub=F,subX=NULL){
+netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearexPenalty=max.cost,subX=NULL){
 
   #check input
   stopifnot(is.vector(z))
@@ -15,6 +15,22 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearex
   else near<-dist$nearex
   if ((!is.null(near))&(is.numeric(nearexPenalty))) nearexPenalty<-rep(nearexPenalty,dim(near)[2])
 
+  if (!is.null(subX)){
+    if (is.factor(subX)){
+      levels(subX)<-1:nlevels(subX)
+      subX<-as.integer(subX)
+    }
+    stopifnot(is.vector(subX))
+  }
+
+  #Must have treated first
+  if(!(min(z[1:(nobs-1)]-z[2:nobs])>=0)){
+    o<-order(1-z)
+    z<-z[o]
+    fine<-fine[o]
+    if (!is.null(subX)) subX<-subX[o]
+  }
+
   #create basic treated-vs-control bipartite graph
   fine1<-fine[z==1]
   fine0<-fine[z==0]
@@ -30,7 +46,8 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearex
   b<-rep(ncontrol,ntreat) #supply for treated nodes
   b<-c(b,rep(0,ncontr)) #flow conservation at control nodes
   #Make costs integer
-  cost<-round(max.cost*(cost-min(cost))/(max(cost)-min(cost)))
+  if (max(cost)==min(cost)) cost=rep(0,tcarcs)
+  else cost<-round(max.cost*(cost-min(cost))/(max(cost)-min(cost)))
   if (!is.null(dist$nearex)){
     nears<-apply(near,1,function(x) sum(nearexPenalty[x]))
     cost<-cost+nears
@@ -43,18 +60,10 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearex
   ucap<-c(ucap,rep(1,ncontr))
   b<-c(b,rep(0,ncontr))
 
-  #Add structure to the bipartite graph for near fine balance
 
-  tb<-table(z,fine)
-  nc<-as.vector(tb[1,])
-  nt<-as.vector(tb[2,])
-  nwant<-nt*ncontrol #desired number
-  nlow<-pmin(nc,nwant) #available number
-  nextra<-nwant-nlow #gap between desired and available
-  finelevels<-as.vector(as.numeric(colnames(tb)))
 
   #Add a node to take extras of subset for fine balance category k
-  if (sub){
+  if (!is.null(subX)){
     tbs<-table(z,subX)
     ncs<-as.vector(tbs[1,])
     nts<-as.vector(tbs[2,])
@@ -78,6 +87,15 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearex
       }
     }
   }
+
+  #Add structure to the bipartite graph for near fine balance
+  tb<-table(z,fine)
+  nc<-as.vector(tb[1,])
+  nt<-as.vector(tb[2,])
+  nwant<-nt*ncontrol #desired number
+  nlow<-pmin(nc,nwant) #available number
+  nextra<-nwant-nlow #gap between desired and available
+  finelevels<-as.vector(as.numeric(colnames(tb)))
 
   #Add a node for fine balance category k
   sinks<-NULL
@@ -113,7 +131,7 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearex
   ucap<-c(ucap,nlow[nlow>0])
   cost<-c(cost,rep(0,length(sinks)))
 
-  if(sub){
+  if(!is.null(subX)){
     startn<-c(startn,extras)
     endn<-c(endn,rep(finalsink,length(extras)))
     ucap<-c(ucap,nextras[nextras>0])
