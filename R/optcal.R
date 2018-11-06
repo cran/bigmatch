@@ -18,13 +18,13 @@ optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=T,subX=NULL){
     levels(subX)<-1:nsubXlevels
   }
 
+  TF<-F
   if (!is.null(exact)){
     exact<-as.factor(exact)
     nexactlevels<-nlevels(exact)
     levels(exact)<-1:nexactlevels
     tb<-table(z,exact)
-    if (is.null(subX)) TF<-T
-    else TF<-all(tb[2,]<=tb[1,])||(nlevels(exact)!=nlevels(subX))||any(exact!=subX)
+    if (!is.null(subX)) TF<-(nlevels(exact)!=nlevels(subX))||any(exact!=subX)
     if (!all(tb[2,]<=tb[1,])){
       if (is.null(subX) || TF){
         stop("An exact match for exact is infeasible for every caliper.")
@@ -34,8 +34,6 @@ optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=T,subX=NULL){
     order_ratio<-order(ratio)
     exactlevels<-(1:nexactlevels)[order_ratio]
   }
-  else TF<-T
-
 
   or<-rank(p,ties.method='min')
   #sort input
@@ -62,6 +60,7 @@ optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=T,subX=NULL){
     ex0<-exact[z==0]
   }
 
+  TF<-TF||is.null(exact)||is.null(subX)
   optcalone<-function(u1,u0,ub,lb,tol){
     nt<-length(u1)
     nc<-length(u0)
@@ -72,9 +71,12 @@ optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=T,subX=NULL){
       right<-left
       for (i in 1:nt){
         close<-cid[(abs(u1[i]-u0)<=caliper)]
-        if ((length(close)==0) & TF) return(NULL)
-        left[i]<-min(close)
-        right[i]<-max(close)
+        #if ((length(close)==0) & TF) return(NULL)
+        if (length(close)==0) return(NULL)
+        else{
+          left[i]<-min(close)
+          right[i]<-max(close)
+        }
       }
       list(left=left,right=right)
     }
@@ -83,27 +85,28 @@ optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=T,subX=NULL){
     lowc<-lb
 
     lr<-leftright(lowc)
-    if (!is.null(lr)){
-      res<-glover(lr$left,lr$right)
+    res<-NULL
+    if (!is.null(lr) && any(!is.na(lr$left))){
+      res<-glover(lr$left[!is.na(lr$left)],lr$right[!is.na(lr$right)])
     }
-    if ((!is.null(lr)) && (res>=min(nt,nc)/nt)){
+    if ((!is.null(lr)) && any(!is.na(lr$left)) && (res*length(lr$left)>=min(nt,nc))){
       return(list(caliper=lowc,interval=c(lowc,lowc),interval.length=0))
     }
 
     lr<-leftright(highc)
-    if (!is.null(lr)){
-      res<-glover(lr$left,lr$right)
+    if (!is.null(lr) && any(!is.na(lr$left))){
+      res<-glover(lr$left[!is.na(lr$left)],lr$right[!is.na(lr$right)])
     }
-    if (is.null(lr)||(res<min(nt,nc)/nt)){
+    if (is.null(lr)||((!is.null(res))&&(ceiling(res*sum(!is.na(lr$left)))<min(nt,nc)))){
       stop('There is no feasible matching.')
     }
 
     while ((highc-lowc)>tol){
       midc<-(highc+lowc)/2
       lr<-leftright(midc)
-      if (!is.null(lr)){
-        res<-glover(lr$left,lr$right)}
-      if (is.null(lr)||(res<min(nt,nc)/nt)){
+      if (!is.null(lr) && any(!is.na(lr$left))){
+        res<-glover(lr$left[!is.na(lr$left)],lr$right[!is.na(lr$right)])}
+      if (is.null(lr)||((!is.null(res))&&(ceiling(res*sum(!is.na(lr$left)))<min(nt,nc)))){
         lowc<-midc
       }else{
         highc<-midc
@@ -125,7 +128,7 @@ optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=T,subX=NULL){
       use1e<-use1[ex1==ei]
       use0e<-use0[ex0==ei]
       use<-c(use1e,use0e)
-      if (length(use)>0){
+      if ((length(use1e)>0) & (length(use0e)>0)){
         ub<-max(use)-min(use)
         lb<-max(cals-tol,0)
         if (ub>=lb){

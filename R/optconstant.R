@@ -13,14 +13,14 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,subX=N
     levels(subX)<-1:nsubXlevels
   }
 
+  TF<-F
   if (!is.null(exact)){
     exact<-as.factor(exact)
     nexactlevels<-nlevels(exact)
     levels(exact)<-1:nexactlevels
     tb<-table(z,exact)
 
-    if (is.null(subX)) TF<-T
-    else TF<-(all(tb[2,]<=tb[1,])||(nlevels(exact)!=nlevels(subX)) ||any(exact!=subX))
+    if (!is.null(subX)) TF<-(nlevels(exact)!=nlevels(subX)) ||any(exact!=subX)
     if (!all(tb[2 ,]<=tb[1,])){
       if (is.null(subX) || TF){
         stop("An exact match for exact is infeasible for every caliper.")
@@ -30,7 +30,6 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,subX=N
     order_ratio<-order(ratio)
     exactlevels<-(1:nexactlevels)[order_ratio]
   }
-  else TF<-T
 
   if (!ties.all){
     set.seed(seed)
@@ -65,6 +64,7 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,subX=N
     ex0<-exact[z==0]
   }
 
+  TF<-TF||is.null(exact)||is.null(subX)
   optconstantone<-function(u1,u0,caliper=NULL,ub,lb,tol){
     nt<-length(u1)
     nc<-length(u0)
@@ -82,7 +82,8 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,subX=N
           close<-(dn<=caliper)
         }
         nexti<-ncontrol
-        if ((sum(close)==0) & TF) return(NULL)
+        #if ((sum(close)==0) & TF) return(NULL)
+        if (sum(close)==0) return(NULL)
         if (sum(close)>constant){
           closei<-which(close)[rank(dn[close],ties.method='min')<=constant]
           if (ties.all || length(closei)==constant) close<-closei
@@ -114,9 +115,12 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,subX=N
             }
           }
         }
-        left[i]<-min(cid[close])
-        right[i]<-max(cid[close])
+        if (sum(close)>0){
+          left[i]<-min(cid[close])
+          right[i]<-max(cid[close])
+        }
       }
+
       list(left=left,right=right)
     }
 
@@ -124,18 +128,19 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,subX=N
     lowc<-lb
 
     lr<-leftrightc(lowc)
-    if (!is.null(lr)){
-      res<-glover(lr$left,lr$right)
+    res<-NULL
+    if (!is.null(lr)&& any(!is.na(lr$left))){
+      res<-glover(lr$left[!is.na(lr$left)],lr$right[!is.na(lr$right)])
     }
-    if ((!is.null(lr)) && (res>=min(nt,nc)/nt)){
+    if ((!is.null(lr)) && any(!is.na(lr$left)) && (res>=min(nt,nc)/nt)){
       return(list(constant=floor(lowc),interval=c(floor(lowc),floor(lowc)),interval.length=0))
     }
 
     lr<-leftrightc(highc)
-    if (!is.null(lr)){
-      res<-glover(lr$left,lr$right)
+    if ((!is.null(lr)) && any(!is.na(lr$left))){
+      res<-glover(lr$left[!is.na(lr$left)],lr$right[!is.na(lr$right)])
     }
-    if (is.null(lr)||(res<min(nt,nc)/nt)){
+    if (is.null(lr)||((!is.null(res))&&(ceiling(res*sum(!is.na(lr$left)))<min(nt,nc)))){
       stop('The caliper itself is not feasible.')
     }
 
@@ -144,10 +149,10 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,subX=N
       if (midc<1) highc<-1
       else{
         lr<-leftrightc(midc)
-        if (!is.null(lr)){
-          res<-glover(lr$left,lr$right)
+        if ((!is.null(lr)) && any(!is.na(lr$left))){
+          res<-glover(lr$left[!is.na(lr$left)],lr$right[!is.na(lr$right)])
         }
-        if (is.null(lr)||(res<min(nt,nc)/nt)){
+        if (is.null(lr)||((!is.null(res))&&(ceiling(res*sum(!is.na(lr$left)))<min(nt,nc)))){
           lowc<-midc
         }else highc<-floor(midc)
       }
@@ -168,13 +173,15 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,subX=N
       use1e<-use1[ex1==ei]
       use0e<-use0[ex0==ei]
       use<-c(use1e,use0e)
-      ub<-length(use0e)
-      lb<-max(ncontrol,cons-tol)
-      if (ub>=lb){
-        ree<-optconstantone(use1e,use0e,caliper,ub,lb,tol)
-        if (cons<ree$constant){
-          result<-ree
-          cons<-ree$constant
+      if ((length(use1e)>0) & (length(use0e)>0)){
+        ub<-length(use0e)
+        lb<-max(ncontrol,cons-tol)
+        if (ub>=lb){
+          ree<-optconstantone(use1e,use0e,caliper,ub,lb,tol)
+          if (cons<ree$constant){
+            result<-ree
+            cons<-ree$constant
+          }
         }
       }
     }

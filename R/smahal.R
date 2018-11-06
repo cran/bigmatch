@@ -1,12 +1,59 @@
 smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NULL,Xextra=NULL,weight=NULL,subX=NULL,ties.all=T){
-  if (is.data.frame(X)){
-    X<-as.data.frame(unclass(X))
-    X<-data.matrix(X)
+
+  Xmatrix<-function(x){
+    if (is.vector(x) || is.factor(x)) x<-matrix(x,nrow=length(z))
+
+    if(is.data.frame(x) || is.character(x)){
+      if(!is.data.frame(x)) x <- as.data.frame(x)
+      X.chars <- which(plyr::laply(x, function(y) 'character' %in% class(y)))
+      if(length(X.chars) > 0){
+        for(i in X.chars){
+          x[,i] <- factor(x[,i])
+
+        }
+      }
+      #if some variables are factors convert to dummies
+      X.factors <-  which(plyr::laply(x, function(y) 'factor' %in% class(y)))
+
+      #handle missing data
+      for(i in which(plyr::laply(x, function(y) any(is.na(y))))){
+        if(i %in% X.factors){
+          #for factors, make NA a new factor level
+          x[,i] <- addNA(x[,i])
+        }else{
+          #for numeric/logical, impute means and add a new indicator for missingness
+          x[[paste(colnames(x)[i],'NA', sep = '')]] <- is.na(x[,i])
+          x[which(is.na(x[,i])),i] <- mean(x[,i], na.rm = TRUE)
+        }
+      }
+      for(i in rev(X.factors)){
+        dummyXi <- model.matrix(as.formula(
+          paste('~',colnames(x)[i], '-1')),data=x)
+        x <- cbind(x[,-i], dummyXi)
+      }
+
+    }else{
+      #handle missing data
+      for(i in c(1:ncol(x))){
+        if(any(is.na(x[,i]))){
+          x <- cbind(x,is.na(X[,i]))
+          colnames(x)[ncol(x)] <- paste(colnames(X)[i],'NA', sep = '')
+          x[which(is.na(x[,i])),i] <- mean(x[,i], na.rm = TRUE)
+        }
+      }
+
+    }
+
+    #get rid of columns that do not vary
+    varying <- apply(x,2, function(y) length(unique(y)) > 1)
+    x <- x[,which(varying),drop = FALSE]
+
+    as.matrix(x)
   }
-  if (is.vector(X)) X<-matrix(X,nrow=length(z))
+
+  X<-Xmatrix(X)
   if (is.data.frame(nearexact)) nearexact<-data.matrix(nearexact)
   if (is.vector(nearexact)) nearexact<-as.matrix(nearexact,ncol=1)
-  stopifnot(is.matrix(X))
   stopifnot(is.vector(z))
   stopifnot(all((z==1)|(z==0)))
   stopifnot(length(z)==(dim(X)[1]))
@@ -25,12 +72,9 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
     }
   }
 
+  if (!is.null(Xextra)) Xextra<-Xmatrix(Xextra)
   if (!is.null(Xextra) & is.null(weight)) weight<-(dim(matrix(X,nrow=length(z)))[2])/(dim(matrix(Xextra,nrow=length(z)))[2])
-  if (is.data.frame(Xextra)){
-    Xextra<-as.data.frame(unclass(Xextra))
-    Xextra<-data.matrix(Xextra)
-  }
-  if (is.vector(Xextra)) Xextra<-matrix(Xextra,ncol=1)
+
   n<-dim(X)[1]
 
   #Must have treated first
@@ -45,6 +89,8 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
   }
 
   if (is.vector(X)) X<-matrix(X,ncol=1)
+  if (is.vector(nearexact)) nearexact<-matrix(nearexact,length(nearexact),1)
+  if (is.vector(Xextra)) Xextra<-matrix(Xextra,length(Xextra),1)
 
   ids<-1:n
   k<-dim(X)[2]
@@ -55,14 +101,21 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
   vuntied<-stats::var(1:n)
   rat<-sqrt(vuntied/diag(cv))
   cv<-diag(rat)%*%cv%*%diag(rat)
-  LL<-chol(cv)
+  LL<-try(chol(cv), silent=T)
+  if(is(LL,"try-error")) {
+    LL<-chol(cv+10^{-10}*diag(nrow(cv)))
+  }
+
   if (!is.null(Xextra)){
     if (is.vector(Xextra)) Xextra<-matrix(Xextra,ncol=1)
     for (j in 1:(dim(Xextra)[2])) Xextra[, j]<-rank(Xextra[, j])
     cv_ex<-stats::cov(Xextra)
     rat_ex<-sqrt(vuntied/diag(cv_ex))
     cv_ex<-diag(rat_ex)%*%cv_ex%*%diag(rat_ex)
-    LL_ex<-chol(cv_ex)
+    LL_ex<-try(chol(cv_ex), silent=T)
+    if(is(LL_ex,"try-error")) {
+      LL_ex<-chol(cv_ex+10^{-10}*diag(nrow(cv_ex)))
+    }
   }
 
   if (is.vector(X)) X<-matrix(X,ncol=1)
@@ -110,8 +163,8 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
     nexti<-ncontrol
     if (!is.null(constant)){
       if(num>constant){
-#        who<-which(who)[order(d[who])[1:constant]]
-#        num<- constant
+        #        who<-which(who)[order(d[who])[1:constant]]
+        #        num<- constant
         whoi<-which(who)[rank(d[who],ties.method='min')<=constant]
         if (ties.all || length(whoi)==constant){
           who<-whoi

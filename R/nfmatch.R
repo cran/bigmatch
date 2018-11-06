@@ -18,10 +18,7 @@ nfmatch<-function(z,p,fine=rep(1,length(z)),X,dat,caliper,constant=NULL,ncontrol
   ntreat<-sum(z)
   ncontr<-sum(1-z)
   stopifnot(ncontr>=(ncontrol*ntreat))
-  if (is.data.frame(X)){
-    X<-as.data.frame(unclass(X))
-    X<-data.matrix(X)
-  }
+
   if (is.vector(X)) X<-matrix(X,nrow=length(z))
   if (is.data.frame(nearexact)) nearexact<-as.matrix(nearexact)
   if (is.factor(nearexact)){
@@ -29,10 +26,7 @@ nfmatch<-function(z,p,fine=rep(1,length(z)),X,dat,caliper,constant=NULL,ncontrol
     nearexact<-as.numeric(nearexact)
   }
   if (is.vector(nearexact)) nearexact<-matrix(nearexact,length(nearexact),1)
-  if (is.data.frame(Xextra)){
-    Xextra<-as.data.frame(unclass(Xextra))
-    Xextra<-data.matrix(Xextra)
-  }
+
   if (is.vector(Xextra)) Xextra<-matrix(Xextra,length(Xextra),1)
   stopifnot(length(z)==(dim(X)[1]))
   stopifnot(length(z)==(dim(dat)[1]))
