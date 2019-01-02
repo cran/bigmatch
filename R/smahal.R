@@ -52,6 +52,7 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
   }
 
   X<-Xmatrix(X)
+
   if (is.data.frame(nearexact)) nearexact<-data.matrix(nearexact)
   if (is.vector(nearexact)) nearexact<-as.matrix(nearexact,ncol=1)
   stopifnot(is.vector(z))
@@ -97,25 +98,42 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
   m<-sum(z)
 
   for (j in 1:k) X[, j]<-rank(X[, j])
+  #get rid of duplicated columns
+  X <- X[,!duplicated(t(X))]
+  #keep only linearly independent columns
+  X<-cbind(rep(1,nrow(X)),X)
+  q <- qr(X)
+  X <- X[,q$pivot[seq(q$rank)]]
+  X <- X[,-1]
   cv<-stats::cov(X)
   vuntied<-stats::var(1:n)
   rat<-sqrt(vuntied/diag(cv))
   cv<-diag(rat)%*%cv%*%diag(rat)
-  LL<-try(chol(cv), silent=T)
-  if(is(LL,"try-error")) {
-    LL<-chol(cv+10^{-10}*diag(nrow(cv)))
-  }
+  LL<-chol(cv)
+  # LL<-try(chol(cv), silent=T)
+  # if(is(LL,"try-error")) {
+  #   LL<-chol(cv+10^{-1}*diag(nrow(cv)))
+  # }
 
   if (!is.null(Xextra)){
     if (is.vector(Xextra)) Xextra<-matrix(Xextra,ncol=1)
     for (j in 1:(dim(Xextra)[2])) Xextra[, j]<-rank(Xextra[, j])
+    #get rid of duplicated columns
+    Xextra <- Xextra[,!duplicated(t(Xextra))]
+    #keep only linearly independent columns
+    Xextra<-cbind(rep(1,nrow(X)),Xextra)
+    q <- qr(Xextra)
+    Xextra <- Xextra[,q$pivot[seq(q$rank)]]
+    Xextra <- Xextra[,-1]
+    if (is.vector(Xextra)) Xextra<-matrix(Xextra,ncol=1)
     cv_ex<-stats::cov(Xextra)
     rat_ex<-sqrt(vuntied/diag(cv_ex))
     cv_ex<-diag(rat_ex)%*%cv_ex%*%diag(rat_ex)
-    LL_ex<-try(chol(cv_ex), silent=T)
-    if(is(LL_ex,"try-error")) {
-      LL_ex<-chol(cv_ex+10^{-10}*diag(nrow(cv_ex)))
-    }
+    LL_ex<-chol(cv_ex)
+    # LL_ex<-try(chol(cv_ex), silent=T)
+    # if(is(LL_ex,"try-error")) {
+    #   LL_ex<-chol(cv_ex+10^{-1}*diag(nrow(cv_ex)))
+    # }
   }
 
   if (is.vector(X)) X<-matrix(X,ncol=1)
