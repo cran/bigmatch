@@ -1,7 +1,7 @@
 Package: bigmatch
 Type: Package
 Title: Making Optimal Matching Size-Scalable Using Optimal Calipers
-Version: 0.6.1
+Version: 0.6.2
 Author: Ruoqi Yu
 Maintainer: Ruoqi Yu <ruoqiyu@wharton.upenn.edu>
 Description: Implements optimal matching with near-fine balance in large observational studies with the use of optimal calipers to get a sparse network. The caliper is optimal in the sense that it is as small as possible such that a matching exists. The main functions in the 'bigmatch' package are optcal() to find the optimal caliper, optconstant() to find the optimal number of nearest neighbors and nfmatch() to find a near-fine balance match with a caliper and a restriction on number of nearest neighbors. 
@@ -15,6 +15,6 @@ LazyData: true
 Imports: rcbalance, stats, liqueueR, plyr, mvnfast, methods
 Suggests: optmatch
 NeedsCompilation: no
-Packaged: 2019-01-01 03:17:24 UTC; ruoqi
+Packaged: 2020-04-10 13:38:16 UTC; ruoqi
 Repository: CRAN
-Date/Publication: 2019-01-02 11:20:07 UTC
+Date/Publication: 2020-04-15 00:20:07 UTC

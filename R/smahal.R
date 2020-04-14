@@ -1,4 +1,4 @@
-smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NULL,Xextra=NULL,weight=NULL,subX=NULL,ties.all=T){
+smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NULL,nearexPenalty=100,Xextra=NULL,weight=NULL,subX=NULL,ties.all=TRUE){
 
   Xmatrix<-function(x){
     if (is.vector(x) || is.factor(x)) x<-matrix(x,nrow=length(z))
@@ -66,9 +66,10 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
   if (!is.null(exact)){
     stopifnot(length(exact)==length(z))
     tb<-table(z,exact)
-    if (!all(tb[2,]<=tb[1,])){
+    if (!all(ncontrol*tb[2,]<=tb[1,])){
       if (is.null(subX) || any(exact!=subX)){
         stop("An exact match for exact is infeasible for every caliper.")
+        return(NULL)
       }
     }
   }
@@ -101,10 +102,11 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
   #get rid of duplicated columns
   X <- X[,!duplicated(t(X))]
   #keep only linearly independent columns
-  X<-cbind(rep(1,nrow(X)),X)
+  X<-cbind(rep(1,length(z)),X)
   q <- qr(X)
   X <- X[,q$pivot[seq(q$rank)]]
   X <- X[,-1]
+  if (is.vector(X)) X<-matrix(X,ncol=1)
   cv<-stats::cov(X)
   vuntied<-stats::var(1:n)
   rat<-sqrt(vuntied/diag(cv))
@@ -121,7 +123,7 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
     #get rid of duplicated columns
     Xextra <- Xextra[,!duplicated(t(Xextra))]
     #keep only linearly independent columns
-    Xextra<-cbind(rep(1,nrow(X)),Xextra)
+    Xextra<-cbind(rep(1,length(z)),Xextra)
     q <- qr(Xextra)
     Xextra <- Xextra[,q$pivot[seq(q$rank)]]
     Xextra <- Xextra[,-1]
@@ -163,11 +165,21 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
     if (is.vector(Xextra1)) Xextra1<-matrix(Xextra1,ncol=1)
   }
 
-  distance<-c()
-  start_node<-c()
-  end_node<-c()
-  nearex<-c()
+  edgen<-edgenum(z,p,caliper,constant,exact,ties.all)
+  distance<-numeric(edgen)
+  start_node<-numeric(edgen)
+  end_node<-numeric(edgen)
+  if (!is.null(nearexact)){
+    if (dim(nearexact)[2]==1) nearex<-numeric(edgen)
+    else nearex<-matrix(nrow=edgen,ncol=dim(nearexact)[2])
+  }else{
+    nearex<-c()
+  }
 
+  left<-numeric(m)
+  right<-numeric(m)
+
+  current<-0
 
   for (i in 1:m){
     #use caliper
@@ -187,7 +199,7 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
         if (ties.all || length(whoi)==constant){
           who<-whoi
           num<-length(who)
-        }else if (constant==ncontrol){
+        }else if (constant<=ncontrol){
           whoi<-which(who)[order(d[who])[1:ncontrol]]
           if ((cids[whoi][1] %in% left) && (cids[whoi][constant] %in% right)){
             nexti<-nexti+1
@@ -233,15 +245,28 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
       distancei<-mvnfast::maha(cc,tt,LL,isChol=TRUE)
     }
 
-    distance<-c(distance, distancei)
-    start_node<-c(start_node, rep(i, num))
-    end_node<-c(end_node,cids[who])
+    if (num>0){
+      distance[(current+1):(current+num)]<-distancei
+      start_node[(current+1):(current+num)]<-rep(i, num)
+      end_node[(current+1):(current+num)]<-cids[who]
 
-    #use nearexact
-    if (!is.null(nearexact)){
-      if (dim(nearexact)[2]==1) nearex<-c(nearex, nearex1[i,]!=nearex0[who,])
-      else nearex<-rbind(nearex, nearex1[i,]!=nearex0[who,])
+      #use nearexact
+      if (!is.null(nearexact)){
+        #if (dim(nearexact)[2]==1) nearex[(current+1):(current+num)]<-nearex1[i,]!=nearex0[who,]
+        #else nearex[(current+1):(current+num),]<-nearex1[i,]!=nearex0[who,]
+        if (dim(nearexact)[2]==1){
+          neari<-nearex1[i,]!=nearex0[who,]
+          nearex[(current+1):(current+num)]<-nearexPenalty*neari
+        }
+        else{
+          if (is.numeric(nearexPenalty)) nearexPenalty<-rep(nearexPenalty,dim(nearexact)[2])
+          neari<-nearex1[i,]!=nearex0[who,]
+          nearex[(current+1):(current+num),]<-apply(neari,1,function(x) sum(nearexPenalty[x]))
+        }
+      }
     }
+
+    current<-current+num
   }
 
   out<-list(d=distance,start=start_node,end=end_node,nearex=nearex)

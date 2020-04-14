@@ -3,8 +3,8 @@
 \title{Minimum-distance near-fine matching.}
 \usage{
 nfmatch(z, p, fine=rep(1,length(z)), X, dat, caliper, constant=NULL, ncontrol=1,
-rank=T, exact=NULL, penalty=1000, max.cost=penalty/10, nearexact=NULL,
-nearexPenalty=max.cost, Xextra=NULL, weight=NULL, subX=NULL, ties.all=T, seed=1)
+rank=TRUE, exact=NULL, penalty=1000, max.cost=penalty/10, nearexact=NULL,
+nearexPenalty=max.cost, Xextra=NULL, weight=NULL, subX=NULL, ties.all=TRUE, seed=1)
 }
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control.}
@@ -75,12 +75,12 @@ detach(nh0506)
   attach(nh0506)
   X<-cbind(female,age,black,hispanic,education,povertyr,bmi)
 
-  oc<-optcal(z,propens,exact=female,tol=0.1,rank=F)
+  oc<-optcal(z,propens,exact=female,tol=0.1,rank=FALSE)
   oc
-  oco<-optconstant(z,propens,oc$caliper,exact=female,rank=F)
+  oco<-optconstant(z,propens,oc$caliper,exact=female,rank=FALSE)
   oco
   m2<-nfmatch(z,propens,factor(hispanic):factor(education),X,nh0506,oc$caliper,oco$constant,
-              exact=female,rank=F)
+              exact=female,rank=FALSE)
 
   matcheddata2=m2$data
   table(matcheddata2$z,matcheddata2$female)
@@ -94,13 +94,13 @@ detach(nh0506)
   bq=cut(bmi,(0:7)*20)
   #first assume povertyr and bmi are of the same importance
   m3<-nfmatch(z,propens,factor(hispanic):factor(education),X,nh0506,oc$caliper,oco$constant,
-              exact=female,nearexact=cbind(pq,bq),rank=F)
+              exact=female,nearexact=cbind(pq,bq),rank=FALSE)
   matcheddata3=m3$data
   head(matcheddata3)
 
   #then assume povertyr is more important than bmi
   m4<-nfmatch(z,propens,factor(hispanic):factor(education),X,nh0506,oc$caliper,oco$constant,
-              exact=female,nearexact=cbind(pq,bq),nearexPenalty=c(100,50),rank=F)
+              exact=female,nearexact=cbind(pq,bq),nearexPenalty=c(100,50),rank=FALSE)
   matcheddata4=m4$data
   head(matcheddata4)
   detach(nh0506)

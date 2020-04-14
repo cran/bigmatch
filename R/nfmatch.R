@@ -1,4 +1,4 @@
-nfmatch<-function(z,p,fine=rep(1,length(z)),X,dat,caliper,constant=NULL,ncontrol=1,rank=T,exact=NULL,penalty=1000,max.cost=penalty/10,nearexact=NULL,nearexPenalty=max.cost,Xextra=NULL,weight=NULL,subX=NULL,ties.all=T,seed=1){
+nfmatch<-function(z,p,fine=rep(1,length(z)),X,dat,caliper,constant=NULL,ncontrol=1,rank=TRUE,exact=NULL,penalty=1000,max.cost=penalty/10,nearexact=NULL,nearexPenalty=max.cost,Xextra=NULL,weight=NULL,subX=NULL,ties.all=TRUE,seed=1){
 
   #Check input
   stopifnot(is.data.frame(dat))
@@ -17,7 +17,7 @@ nfmatch<-function(z,p,fine=rep(1,length(z)),X,dat,caliper,constant=NULL,ncontrol
   nobs<-length(z)
   ntreat<-sum(z)
   ncontr<-sum(1-z)
-  stopifnot(ncontr>=(ncontrol*ntreat))
+  if (is.null(subX)) stopifnot(ncontr>=(ncontrol*ntreat))
 
   if (is.vector(X)) X<-matrix(X,nrow=length(z))
   if (is.data.frame(nearexact)) nearexact<-as.matrix(nearexact)
@@ -107,9 +107,9 @@ nfmatch<-function(z,p,fine=rep(1,length(z)),X,dat,caliper,constant=NULL,ncontrol
   #do match
   timeind<-proc.time()
   if (rank){
-    dist<-smahal(z,or,X,caliper,constant,ncontrol,exact,nearexact,Xextra,weight,subX,ties.all)
+    dist<-smahal(z,or,X,caliper,constant,ncontrol,exact,nearexact,nearexPenalty,Xextra,weight,subX,ties.all)
   }else{
-    dist<-smahal(z,p,X,caliper,constant,ncontrol,exact,nearexact,Xextra,weight,subX,ties.all)
+    dist<-smahal(z,p,X,caliper,constant,ncontrol,exact,nearexact,nearexPenalty,Xextra,weight,subX,ties.all)
   }
   timeind<-proc.time()-timeind
   m<-nearfine(z,fine,dist,dat,ncontrol,penalty,max.cost,nearexPenalty,subX)

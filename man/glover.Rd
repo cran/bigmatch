@@ -1,6 +1,6 @@
 \name{glover}
 \alias{glover}
-\title{Perfect matching in a convex bipartite graph.}
+\title{Maximum matching in a convex bipartite graph.}
 \usage{
 glover(left, right)
 }
@@ -23,7 +23,7 @@ right<-c(4,3,1,5,5)
 glover(left,right)
 }
 \description{
-Uses Glover's (1967) algorithm to find a perfect matching in a convex bipartite graph. The implementation uses a priority queue, not used by Glover, as in Lipski and Preparata (1981).
+Uses Glover's (1967) algorithm to find a maximum matching in a doubly convex bipartite graph. The implementation uses a priority queue, not used by Glover, as in Lipski and Preparata (1981).
 Of limited interest to most users; function glover() would typically be called by other functions.
 }
 

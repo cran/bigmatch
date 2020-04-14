@@ -1,11 +1,11 @@
-optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=T,subX=NULL){
+optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=TRUE,subX=NULL){
 
   #check input
   stopifnot(is.vector(z))
   stopifnot(is.vector(p))
   stopifnot(length(z)==length(p))
   stopifnot(all((z==1)|(z==0)))
-  stopifnot(sum(z)*ncontrol<=sum(1-z))
+  if (is.null(subX)) stopifnot(sum(z)*ncontrol<=sum(1-z))
 
   if (is.null(tol)){
     if (rank) tol<-1
@@ -106,7 +106,7 @@ optcal<-function(z,p,exact=NULL,ncontrol=1,tol=NULL,rank=T,subX=NULL){
       lr<-leftright(midc)
       if (!is.null(lr) && any(!is.na(lr$left))){
         res<-glover(lr$left[!is.na(lr$left)],lr$right[!is.na(lr$right)])}
-      if (is.null(lr)||((!is.null(res))&&(ceiling(res*sum(!is.na(lr$left)))<min(nt,nc)))){
+      if (is.null(lr)||((!is.null(res))&&(round(res*sum(!is.na(lr$left)))<min(nt,nc)))){
         lowc<-midc
       }else{
         highc<-midc

@@ -1,11 +1,11 @@
-optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,subX=NULL,ties.all=T,seed=1){
+optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=TRUE,subX=NULL,ties.all=TRUE,seed=1){
 
   #check input
   stopifnot(is.vector(z))
   stopifnot(is.vector(p))
   stopifnot(length(z)==length(p))
   stopifnot(all((z==1)|(z==0)))
-  stopifnot(sum(z)*ncontrol<=sum(1-z))
+  if (is.null(subX)) stopifnot(sum(z)*ncontrol<=sum(1-z))
 
   if (!is.null(subX)){
     subX<-as.factor(subX)
@@ -87,7 +87,7 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,subX=N
         if (sum(close)>constant){
           closei<-which(close)[rank(dn[close],ties.method='min')<=constant]
           if (ties.all || length(closei)==constant) close<-closei
-          else if (constant==ncontrol){
+          else if (constant<=ncontrol){
             closei<-which(close)[order(dn[close])[1:ncontrol]]
             if ((cid[closei][1] %in% left) && (cid[closei][constant] %in% right)){
               nexti<-nexti+1
@@ -152,7 +152,7 @@ optconstant<-function(z,p,caliper=NULL,exact=NULL,ncontrol=1,tol=1,rank=T,subX=N
         if ((!is.null(lr)) && any(!is.na(lr$left))){
           res<-glover(lr$left[!is.na(lr$left)],lr$right[!is.na(lr$right)])
         }
-        if (is.null(lr)||((!is.null(res))&&(ceiling(res*sum(!is.na(lr$left)))<min(nt,nc)))){
+        if (is.null(lr)||((!is.null(res))&&(round(res*sum(!is.na(lr$left)))<min(nt,nc)))){
           lowc<-midc
         }else highc<-floor(midc)
       }

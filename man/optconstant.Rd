@@ -2,8 +2,8 @@
 \alias{optconstant}
 \title{Finds the optimal constant.}
 \usage{
-optconstant(z, p, caliper=NULL, exact=NULL, ncontrol=1, tol=1, rank=T,
-subX=NULL, ties.all=T, seed=1)
+optconstant(z, p, caliper=NULL, exact=NULL, ncontrol=1, tol=1, rank=TRUE,
+subX=NULL, ties.all=TRUE, seed=1)
 }
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control. }

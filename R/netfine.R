@@ -9,11 +9,11 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearex
   nobs<-length(z)
   ntreat<-sum(z)
   ncontr<-sum(1-z)
-  stopifnot(ncontr>=(ncontrol*ntreat))
+  if (is.null(subX)) stopifnot(ncontr>=(ncontrol*ntreat))
   stopifnot(nobs==length(fine))
-  if (is.vector(dist$nearex)) near<-as.matrix(dist$nearex,ncol=1)
-  else near<-dist$nearex
-  if ((!is.null(near))&(is.numeric(nearexPenalty))) nearexPenalty<-rep(nearexPenalty,dim(near)[2])
+  #if (is.vector(dist$nearex)) near<-matrix(dist$nearex,ncol=1)
+  #else near<-dist$nearex
+  #if ((!is.null(dist$nearex))&(!is.vector(dist$nearex))&(is.numeric(nearexPenalty))) nearexPenalty<-rep(nearexPenalty,dim(near)[2])
 
   if (!is.null(subX)){
     if (is.factor(subX)){
@@ -47,9 +47,20 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearex
   b<-c(b,rep(0,ncontr)) #flow conservation at control nodes
   #Make costs integer
   if (max(cost)==min(cost)) cost=rep(0,tcarcs)
-  else cost<-round(max.cost*(cost-min(cost))/(max(cost)-min(cost)))
+  else{
+    #cost.min=min(cost)
+    #cost.max=max(cost)
+    #breaks=ceiling(tcarcs/10^6)
+    #for (breaki in 1:breaks){
+    #  if(breaki==breaks) cost[((breaki-1)*10^6+1):tcarcs]=round(max.cost*(cost[((breaki-1)*10^6+1):tcarcs]-cost.min)/(cost.max-cost.min))
+    #  else cost[((breaki-1)*10^6+1):(breaki*10^6)]=round(max.cost*(cost[((breaki-1)*10^6+1):(breaki*10^6)]-cost.min)/(cost.max-cost.min))
+    #}
+    cost<-round(max.cost*(cost-min(cost))/(max(cost)-min(cost)))
+  }
+
   if (!is.null(dist$nearex)){
-    nears<-apply(near,1,function(x) sum(nearexPenalty[x]))
+    #nears<-apply(near,1,function(x) sum(nearexPenalty[x]))
+    nears<-dist$nearex
     cost<-cost+nears
   }
 

@@ -3,7 +3,7 @@
 \title{Creates a robust Mahalanobis distance for matching.}
 \usage{
 smahal(z, p, X, caliper, constant=NULL, ncontrol=1, exact=NULL,
-nearexact=NULL, Xextra=NULL, weight=NULL, subX=NULL, ties.all=T)
+nearexact=NULL, nearexPenalty=100, Xextra=NULL, weight=NULL, subX=NULL, ties.all=TRUE)
 }
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control. }
@@ -14,6 +14,7 @@ nearexact=NULL, Xextra=NULL, weight=NULL, subX=NULL, ties.all=T)
 \item{ncontrol}{ A positive integer giving the number of controls to be matched to each treated subject.  If ncontrol is too large, the match will be infeasible.}
 \item{exact}{ If not NULL, then a vector of length(z)=length(p) giving variable that need to be exactly matched. }
 \item{nearexact}{ If not NULL, then a vector of length length(z) or matrix with length(z) rows giving variables that need to be exactly matched. If it is not possible to exactly match all variables, we will exactly match as many variables as we can.}
+\item{nearexPenalty}{ Penalty for mismatch on nearexact if nearexact is not NULL.}
 \item{Xextra}{ If not NULL, another robust Mahalanobis distance based on Xextra is calculated. The distance between treated-control pair is a weighted sum of the two distances.}
 \item{weight}{ The weight for Mahalanobis distance of Xextra.}
 \item{subX}{ If a subset matching is required, the variable that the subset matching is based on. That is, for each level of subX, extra treated will be discarded in order to have the number of matched treated subjects being the minimum size of treated and control groups. If exact matching on a variable x is desired and discarding extra treated is fine if there are more treated than controls for a certain level k, set exact=x, subX=x.}

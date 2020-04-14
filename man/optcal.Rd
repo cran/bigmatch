@@ -2,7 +2,7 @@
 \alias{optcal}
 \title{Finds the optimal caliper width.}
 \usage{
-optcal(z, p, exact=NULL, ncontrol=1, tol=NULL, rank=T, subX=NULL)
+optcal(z, p, exact=NULL, ncontrol=1, tol=NULL, rank=TRUE, subX=NULL)
 }
 \arguments{
 \item{z}{ A vector whose ith coordinate is 1 for a treated unit and is 0 for a control.}

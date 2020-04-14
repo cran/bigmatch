@@ -38,14 +38,20 @@ nearfine<-function(z,fine,dist,dat,ncontrol=1,penalty=1000,max.cost=penalty/10,n
     treated<-net$startn[1:net$tcarcs]
     control<-net$endn[1:net$tcarcs]
     match.df<-data.frame('treat'=treated,'x'=x,'control'=control)
-    matched.or.not<-plyr::daply(match.df,plyr::.(match.df$treat),
-                                  function(treat.edges) c(as.numeric(as.character(treat.edges$treat[1])),sum(treat.edges$x)),.drop_o=FALSE)
-    if(any(matched.or.not[,2]==0)){
-      match.df<-match.df[-which(match.df$treat %in% matched.or.not[which(matched.or.not[,2]==0),1]),]
-    }
+    treated=treated[which(x==1)]
+    control=control[which(x==1)]
+    match.df=data.frame('treat'=treated,'control'=control)
     match.df$treat<-as.factor(as.character(match.df$treat))
     matches<-as.matrix(plyr::daply(match.df, plyr::.(match.df$treat),
-                                     function(treat.edges) treat.edges$control[treat.edges$x==1],.drop_o=FALSE))
+                                   function(treat.edges) treat.edges$control,.drop_o=FALSE))
+    #matched.or.not<-plyr::daply(match.df,plyr::.(match.df$treat),
+    #                              function(treat.edges) c(as.numeric(as.character(treat.edges$treat[1])),sum(treat.edges$x)),.drop_o=FALSE)
+    #if(any(matched.or.not[,2]==0)){
+    #  match.df<-match.df[-which(match.df$treat %in% matched.or.not[which(matched.or.not[,2]==0),1]),]
+    #}
+    #match.df$treat<-as.factor(as.character(match.df$treat))
+    #matches<-as.matrix(plyr::daply(match.df, plyr::.(match.df$treat),
+    #                                 function(treat.edges) treat.edges$control[treat.edges$x==1],.drop_o=FALSE))
     n<-length(z)
     ntreat<-sum(z)
     id1<-(1:n)[z==1]
@@ -54,7 +60,8 @@ nearfine<-function(z,fine,dist,dat,ncontrol=1,penalty=1000,max.cost=penalty/10,n
     matchid<-as.vector(t(matchid))
     dat1<-dat[matchid,]
     mset<-rep(1:length(matches),each=ncontrol+1)
-    dat1<-cbind(mset,dat1)
+    #dat1<-cbind(mset,dat1)
+    dat1$mset<-mset
     timeinmatch<-proc.time()-timeinmatch
     list(feasible=output$feasible,timeinrelax=timeinrelax,timeinnet=timeinnet,timeinmatch=timeinmatch,d=dat1,number=net$tcarcs)
   }
