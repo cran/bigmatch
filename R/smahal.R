@@ -84,15 +84,15 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
     o<-order(1-z)
     z<-z[o]
     p<-p[o]
-    X<-X[o,]
+    X<-X[o,,drop=FALSE]
     if (!is.null(exact)) exact<-exact[o]
-    if (!is.null(nearexact)) nearexact<-nearexact[o,]
-    if (!is.null(Xextra)) Xextra<-Xextra[o,]
+    if (!is.null(nearexact)) nearexact<-nearexact[o,,drop=FALSE]
+    if (!is.null(Xextra)) Xextra<-Xextra[o,,drop=FALSE]
   }
 
-  if (is.vector(X)) X<-matrix(X,ncol=1)
-  if (is.vector(nearexact)) nearexact<-matrix(nearexact,length(nearexact),1)
-  if (is.vector(Xextra)) Xextra<-matrix(Xextra,length(Xextra),1)
+#  if (is.vector(X)) X<-matrix(X,ncol=1)
+#  if (is.vector(nearexact)) nearexact<-matrix(nearexact,length(nearexact),1)
+#  if (is.vector(Xextra)) Xextra<-matrix(Xextra,length(Xextra),1)
 
   ids<-1:n
   k<-dim(X)[2]
@@ -152,17 +152,18 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
   }
   if (!is.null(nearexact)){
     if (is.vector(nearexact)) nearexact<-matrix(nearexact,ncol=1)
-    nearex0<-nearexact[z==0,]
-    nearex1<-nearexact[z==1,]
-    if (is.vector(nearex0)) nearex0<-matrix(nearex0,ncol=1)
-    if (is.vector(nearex1)) nearex1<-matrix(nearex1,ncol=1)
+    nearex0<-nearexact[z==0,,drop=FALSE]
+    nearex1<-nearexact[z==1,,drop=FALSE]
+#    if (is.vector(nearex0)) nearex0<-matrix(nearex0,ncol=1)
+#    if (is.vector(nearex1)) nearex1<-matrix(nearex1,ncol=1)
+    if (is.numeric(nearexPenalty)) nearexPenalty<-rep(nearexPenalty,dim(nearexact)[2])
   }
   if (!is.null(Xextra)){
     if (is.vector(Xextra)) Xextra<-matrix(Xextra,ncol=1)
-    Xextra0<-Xextra[z==0,]
-    Xextra1<-Xextra[z==1,]
-    if (is.vector(Xextra0)) Xextra0<-matrix(Xextra0,ncol=1)
-    if (is.vector(Xextra1)) Xextra1<-matrix(Xextra1,ncol=1)
+    Xextra0<-Xextra[z==0,,drop=FALSE]
+    Xextra1<-Xextra[z==1,,drop=FALSE]
+#    if (is.vector(Xextra0)) Xextra0<-matrix(Xextra0,ncol=1)
+#    if (is.vector(Xextra1)) Xextra1<-matrix(Xextra1,ncol=1)
   }
 
   edgen<-edgenum(z,p,caliper,constant,exact,ties.all)
@@ -170,8 +171,7 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
   start_node<-numeric(edgen)
   end_node<-numeric(edgen)
   if (!is.null(nearexact)){
-    if (dim(nearexact)[2]==1) nearex<-numeric(edgen)
-    else nearex<-matrix(nrow=edgen,ncol=dim(nearexact)[2])
+    nearex<-numeric(edgen)
   }else{
     nearex<-c()
   }
@@ -259,9 +259,9 @@ smahal<-function(z,p,X,caliper,constant=NULL,ncontrol=1,exact=NULL,nearexact=NUL
           nearex[(current+1):(current+num)]<-nearexPenalty*neari
         }
         else{
-          if (is.numeric(nearexPenalty)) nearexPenalty<-rep(nearexPenalty,dim(nearexact)[2])
+ #         if (is.numeric(nearexPenalty)) nearexPenalty<-rep(nearexPenalty,dim(nearexact)[2])
           neari<-nearex1[i,]!=nearex0[who,]
-          nearex[(current+1):(current+num),]<-apply(neari,1,function(x) sum(nearexPenalty[x]))
+          nearex[(current+1):(current+num)]<-apply(neari,1,function(x) sum(nearexPenalty[x]))
         }
       }
     }

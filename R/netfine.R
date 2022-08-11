@@ -60,8 +60,7 @@ netfine<-function(z,fine,dist,ncontrol=1,penalty=1000,max.cost=penalty/10,nearex
 
   if (!is.null(dist$nearex)){
     #nears<-apply(near,1,function(x) sum(nearexPenalty[x]))
-    nears<-dist$nearex
-    cost<-cost+nears
+    cost<-cost+dist$nearex
   }
 
   #create a duplicate for each control to make sure each control is only used once
